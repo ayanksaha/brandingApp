@@ -2,6 +2,9 @@ package com.lb.brandingApp.category.data.dto.response;
 
 import com.fasterxml.jackson.annotation.JsonInclude;
 import com.fasterxml.jackson.annotation.JsonProperty;
+import com.lb.brandingApp.common.data.dto.response.AmountResponseDto;
+import com.lb.brandingApp.common.data.dto.response.AreaResponseDto;
+import com.lb.brandingApp.common.data.dto.response.QuantityResponseDto;
 import lombok.Builder;
 import lombok.Getter;
 

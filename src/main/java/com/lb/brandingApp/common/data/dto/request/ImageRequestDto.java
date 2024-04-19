@@ -1,4 +1,4 @@
-package com.lb.brandingApp.task.data.dto.request;
+package com.lb.brandingApp.common.data.dto.request;
 
 import com.lb.brandingApp.common.data.enums.ImageReference;
 

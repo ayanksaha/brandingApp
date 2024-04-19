@@ -1,4 +1,4 @@
-package com.lb.brandingApp.category.data.dto.request;
+package com.lb.brandingApp.common.data.dto.request;
 
 import lombok.NonNull;
 

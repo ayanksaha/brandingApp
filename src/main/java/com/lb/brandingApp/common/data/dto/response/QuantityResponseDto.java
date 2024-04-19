@@ -1,4 +1,4 @@
-package com.lb.brandingApp.task.data.dto.response;
+package com.lb.brandingApp.common.data.dto.response;
 
 import com.fasterxml.jackson.annotation.JsonInclude;
 import com.lb.brandingApp.common.data.enums.UOM;
@@ -8,8 +8,7 @@ import lombok.Getter;
 @Builder
 @Getter
 @JsonInclude(JsonInclude.Include.NON_NULL)
-public class DimensionResponseDto {
-    private Double length;
-    private Double width;
+public class QuantityResponseDto {
+    private Integer value;
     private UOM unit;
 }

@@ -1,4 +1,4 @@
-package com.lb.brandingApp.task.data.dto.response;
+package com.lb.brandingApp.common.data.dto.response;
 
 import com.fasterxml.jackson.annotation.JsonInclude;
 import lombok.Builder;

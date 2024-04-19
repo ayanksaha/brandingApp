@@ -1,4 +1,4 @@
-package com.lb.brandingApp.category.data.dto.response;
+package com.lb.brandingApp.common.data.dto.response;
 
 import com.fasterxml.jackson.annotation.JsonInclude;
 import com.lb.brandingApp.common.data.enums.TimeUnit;
