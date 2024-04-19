@@ -10,8 +10,7 @@ import com.fasterxml.jackson.datatype.jsr310.ser.LocalDateTimeSerializer;
 import com.lb.brandingApp.common.data.models.response.*;
 import com.lb.brandingApp.common.data.enums.ApprovalStatus;
 import com.lb.brandingApp.auth.data.models.response.UserResponseDto;
-import com.lb.brandingApp.config.data.models.response.NotesResponseDto;
-import com.lb.brandingApp.config.data.models.response.ProductConfigResponseDto;
+import com.lb.brandingApp.product.data.models.response.ProductConfigResponseDto;
 import lombok.Builder;
 import lombok.Getter;
 

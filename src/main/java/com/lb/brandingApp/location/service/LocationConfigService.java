@@ -1,12 +1,12 @@
-package com.lb.brandingApp.config.service;
+package com.lb.brandingApp.location.service;
 
-import com.lb.brandingApp.config.data.entities.DistrictConfig;
-import com.lb.brandingApp.config.data.entities.StateConfig;
-import com.lb.brandingApp.config.data.models.request.DistrictConfigRequestDto;
-import com.lb.brandingApp.config.data.models.request.StateConfigRequestDto;
-import com.lb.brandingApp.config.data.models.response.DistrictConfigResponseDto;
-import com.lb.brandingApp.config.data.models.response.StateConfigResponseDto;
-import com.lb.brandingApp.config.repository.StateConfigRepository;
+import com.lb.brandingApp.location.data.entities.DistrictConfig;
+import com.lb.brandingApp.location.data.entities.StateConfig;
+import com.lb.brandingApp.location.data.models.request.DistrictConfigRequestDto;
+import com.lb.brandingApp.location.data.models.request.StateConfigRequestDto;
+import com.lb.brandingApp.location.data.models.response.DistrictConfigResponseDto;
+import com.lb.brandingApp.location.data.models.response.StateConfigResponseDto;
+import com.lb.brandingApp.location.repository.StateConfigRepository;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;

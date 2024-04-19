@@ -1,4 +1,4 @@
-package com.lb.brandingApp.config.data.entities;
+package com.lb.brandingApp.product.data.entities;
 
 import com.lb.brandingApp.common.data.entities.Amount;
 import com.lb.brandingApp.task.data.entities.Allotment;

@@ -1,4 +1,4 @@
-package com.lb.brandingApp.config.data.models.response;
+package com.lb.brandingApp.location.data.models.response;
 
 import com.fasterxml.jackson.annotation.JsonInclude;
 import com.fasterxml.jackson.annotation.JsonProperty;

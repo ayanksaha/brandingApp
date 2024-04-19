@@ -1,4 +1,4 @@
-package com.lb.brandingApp.config.data.models.response;
+package com.lb.brandingApp.task.data.models.response;
 
 import com.fasterxml.jackson.annotation.JsonInclude;
 import lombok.Builder;

@@ -3,7 +3,7 @@ package com.lb.brandingApp.category.data.entities;
 import com.lb.brandingApp.common.data.entities.Amount;
 import com.lb.brandingApp.common.data.entities.Area;
 import com.lb.brandingApp.common.data.entities.Quantity;
-import com.lb.brandingApp.config.data.entities.StateConfig;
+import com.lb.brandingApp.location.data.entities.StateConfig;
 import jakarta.persistence.*;
 import lombok.Getter;
 import lombok.NoArgsConstructor;

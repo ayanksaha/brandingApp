@@ -1,4 +1,4 @@
-package com.lb.brandingApp.config.data.models.request;
+package com.lb.brandingApp.product.data.models.request;
 
 import com.fasterxml.jackson.annotation.JsonProperty;
 import com.lb.brandingApp.common.data.models.request.AmountRequestDto;

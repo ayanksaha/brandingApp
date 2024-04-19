@@ -1,6 +1,6 @@
-package com.lb.brandingApp.config.repository;
+package com.lb.brandingApp.location.repository;
 
-import com.lb.brandingApp.config.data.entities.StateConfig;
+import com.lb.brandingApp.location.data.entities.StateConfig;
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.stereotype.Repository;
 

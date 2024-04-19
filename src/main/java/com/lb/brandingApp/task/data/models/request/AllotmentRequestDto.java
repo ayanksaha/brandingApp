@@ -4,7 +4,7 @@ import com.fasterxml.jackson.annotation.JsonProperty;
 import com.lb.brandingApp.common.data.models.request.DimensionRequestDto;
 import com.lb.brandingApp.common.data.models.request.ImageRequestDto;
 import com.lb.brandingApp.common.data.models.request.QuantityRequestDto;
-import com.lb.brandingApp.config.data.models.request.ProductConfigRequestDto;
+import com.lb.brandingApp.product.data.models.request.ProductConfigRequestDto;
 
 import java.util.List;
 

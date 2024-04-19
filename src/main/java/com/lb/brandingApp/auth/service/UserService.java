@@ -16,7 +16,7 @@ import java.util.List;
 import static com.lb.brandingApp.app.constants.ApplicationConstants.USER_NOT_FOUND;
 
 @Service
-public class UserDetailsServiceImpl implements UserDetailsService {
+public class UserService implements UserDetailsService {
     @Autowired
     private UserRepository userRepository;
 

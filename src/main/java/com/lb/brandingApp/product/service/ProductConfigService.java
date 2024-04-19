@@ -1,10 +1,10 @@
-package com.lb.brandingApp.config.service;
+package com.lb.brandingApp.product.service;
 
 import com.lb.brandingApp.common.data.entities.Amount;
-import com.lb.brandingApp.config.data.entities.ProductConfig;
-import com.lb.brandingApp.config.data.models.request.ProductConfigRequestDto;
-import com.lb.brandingApp.config.data.models.response.ProductConfigResponseDto;
-import com.lb.brandingApp.config.repository.ProductConfigRepository;
+import com.lb.brandingApp.product.data.entities.ProductConfig;
+import com.lb.brandingApp.product.data.models.request.ProductConfigRequestDto;
+import com.lb.brandingApp.product.data.models.response.ProductConfigResponseDto;
+import com.lb.brandingApp.product.repository.ProductConfigRepository;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;

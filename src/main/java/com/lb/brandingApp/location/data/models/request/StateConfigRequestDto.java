@@ -1,4 +1,4 @@
-package com.lb.brandingApp.config.data.models.request;
+package com.lb.brandingApp.location.data.models.request;
 
 import com.fasterxml.jackson.annotation.JsonProperty;
 import lombok.NonNull;

@@ -2,7 +2,7 @@ package com.lb.brandingApp.task.data.entities;
 
 import com.lb.brandingApp.auth.data.entities.User;
 import com.lb.brandingApp.common.data.entities.*;
-import com.lb.brandingApp.config.data.entities.ProductConfig;
+import com.lb.brandingApp.product.data.entities.ProductConfig;
 import com.lb.brandingApp.common.data.enums.ApprovalStatus;
 import jakarta.persistence.*;
 import lombok.Getter;

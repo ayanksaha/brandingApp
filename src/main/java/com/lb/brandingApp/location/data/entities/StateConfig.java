@@ -1,4 +1,4 @@
-package com.lb.brandingApp.config.data.entities;
+package com.lb.brandingApp.location.data.entities;
 
 import com.lb.brandingApp.category.data.entities.State;
 import jakarta.persistence.*;

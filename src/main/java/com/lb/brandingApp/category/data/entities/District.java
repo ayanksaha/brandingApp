@@ -4,7 +4,7 @@ package com.lb.brandingApp.category.data.entities;
 import com.lb.brandingApp.common.data.entities.Amount;
 import com.lb.brandingApp.common.data.entities.Area;
 import com.lb.brandingApp.common.data.entities.Quantity;
-import com.lb.brandingApp.config.data.entities.DistrictConfig;
+import com.lb.brandingApp.location.data.entities.DistrictConfig;
 import com.lb.brandingApp.task.data.entities.Task;
 import jakarta.persistence.*;
 import lombok.Getter;
