@@ -1,7 +1,7 @@
 package com.lb.brandingApp.task.controller;
 
-import com.lb.brandingApp.task.data.dto.request.TaskRequestDto;
-import com.lb.brandingApp.task.data.dto.response.TaskResponseDto;
+import com.lb.brandingApp.task.data.models.request.TaskRequestDto;
+import com.lb.brandingApp.task.data.models.response.TaskResponseDto;
 import com.lb.brandingApp.task.service.TaskService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.ResponseEntity;

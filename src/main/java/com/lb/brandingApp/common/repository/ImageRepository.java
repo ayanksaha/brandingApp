@@ -1,6 +1,6 @@
 package com.lb.brandingApp.common.repository;
 
-import com.lb.brandingApp.common.data.dao.ImageData;
+import com.lb.brandingApp.common.data.entities.ImageData;
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.stereotype.Repository;
 

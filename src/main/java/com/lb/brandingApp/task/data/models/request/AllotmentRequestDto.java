@@ -1,0 +1,17 @@
+package com.lb.brandingApp.task.data.models.request;
+
+import com.fasterxml.jackson.annotation.JsonProperty;
+import com.lb.brandingApp.common.data.models.request.DimensionRequestDto;
+import com.lb.brandingApp.common.data.models.request.ImageRequestDto;
+import com.lb.brandingApp.common.data.models.request.QuantityRequestDto;
+import com.lb.brandingApp.config.data.models.request.ProductConfigRequestDto;
+
+import java.util.List;
+
+public record AllotmentRequestDto(
+        ProductConfigRequestDto product,
+        DimensionRequestDto dimension,
+        QuantityRequestDto quantity,
+        @JsonProperty("images") List<ImageRequestDto> referenceImages,
+        @JsonProperty("notes") String noteText
+) {}

@@ -1,11 +1,11 @@
 package com.lb.brandingApp.auth.controller;
 
-import com.lb.brandingApp.auth.data.dto.request.PermissionRequestDto;
-import com.lb.brandingApp.auth.data.dto.request.RegistrationRequestDto;
-import com.lb.brandingApp.auth.data.dto.request.TeamRequestDto;
-import com.lb.brandingApp.auth.data.dto.request.UserRequestDto;
-import com.lb.brandingApp.auth.data.dto.response.TeamResponseDto;
-import com.lb.brandingApp.auth.data.dto.response.UserResponseDto;
+import com.lb.brandingApp.auth.data.models.request.PermissionRequestDto;
+import com.lb.brandingApp.auth.data.models.request.RegistrationRequestDto;
+import com.lb.brandingApp.auth.data.models.request.TeamRequestDto;
+import com.lb.brandingApp.auth.data.models.request.UserRequestDto;
+import com.lb.brandingApp.auth.data.models.response.TeamResponseDto;
+import com.lb.brandingApp.auth.data.models.response.UserResponseDto;
 import com.lb.brandingApp.auth.service.AuthService;
 import com.lb.brandingApp.auth.service.TeamService;
 import lombok.NonNull;

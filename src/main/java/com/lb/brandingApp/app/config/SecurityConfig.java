@@ -1,7 +1,7 @@
 package com.lb.brandingApp.app.config;
 
 import com.lb.brandingApp.auth.filter.AuthTokenFilter;
-import com.lb.brandingApp.auth.service.impl.UserDetailsServiceImpl;
+import com.lb.brandingApp.auth.service.UserDetailsServiceImpl;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;

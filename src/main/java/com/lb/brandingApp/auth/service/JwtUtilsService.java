@@ -3,7 +3,7 @@ package com.lb.brandingApp.auth.service;
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.core.type.TypeReference;
 import com.fasterxml.jackson.databind.ObjectMapper;
-import com.lb.brandingApp.auth.data.dto.common.PermissionDto;
+import com.lb.brandingApp.auth.data.models.common.PermissionDto;
 import io.jsonwebtoken.Claims;
 import io.jsonwebtoken.Jws;
 import io.jsonwebtoken.Jwts;

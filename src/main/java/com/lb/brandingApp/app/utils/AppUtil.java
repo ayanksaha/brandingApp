@@ -1,15 +1,15 @@
 package com.lb.brandingApp.app.utils;
 
 import com.lb.brandingApp.app.constants.ApplicationConstants;
-import com.lb.brandingApp.auth.data.dao.Permission;
-import com.lb.brandingApp.common.data.dao.Amount;
-import com.lb.brandingApp.common.data.dao.Area;
-import com.lb.brandingApp.common.data.dao.Dimension;
-import com.lb.brandingApp.common.data.dao.Quantity;
+import com.lb.brandingApp.auth.data.entities.Permission;
+import com.lb.brandingApp.common.data.entities.Amount;
+import com.lb.brandingApp.common.data.entities.Area;
+import com.lb.brandingApp.common.data.entities.Dimension;
+import com.lb.brandingApp.common.data.entities.Quantity;
 import com.lb.brandingApp.common.data.enums.Currency;
 import com.lb.brandingApp.common.data.enums.TeamDescription;
 import com.lb.brandingApp.common.data.enums.UOM;
-import com.lb.brandingApp.auth.data.dto.common.PermissionDto;
+import com.lb.brandingApp.auth.data.models.common.PermissionDto;
 
 import java.util.Arrays;
 import java.util.Set;

@@ -1,6 +1,6 @@
 package com.lb.brandingApp.common.repository;
 
-import com.lb.brandingApp.common.data.dao.Dimension;
+import com.lb.brandingApp.common.data.entities.Dimension;
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.stereotype.Repository;
 

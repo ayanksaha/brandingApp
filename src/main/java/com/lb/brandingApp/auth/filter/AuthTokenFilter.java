@@ -1,9 +1,9 @@
 package com.lb.brandingApp.auth.filter;
 
-import com.lb.brandingApp.auth.data.dao.Team;
-import com.lb.brandingApp.auth.data.dao.User;
-import com.lb.brandingApp.auth.data.dto.common.PermissionDto;
-import com.lb.brandingApp.auth.data.dto.common.UserExtension;
+import com.lb.brandingApp.auth.data.entities.Team;
+import com.lb.brandingApp.auth.data.entities.User;
+import com.lb.brandingApp.auth.data.models.common.PermissionDto;
+import com.lb.brandingApp.auth.data.models.common.UserExtension;
 import com.lb.brandingApp.auth.repository.UserRepository;
 import com.lb.brandingApp.auth.service.JwtUtilsService;
 import io.jsonwebtoken.Claims;

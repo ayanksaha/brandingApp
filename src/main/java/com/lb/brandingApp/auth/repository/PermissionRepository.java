@@ -1,6 +1,6 @@
 package com.lb.brandingApp.auth.repository;
 
-import com.lb.brandingApp.auth.data.dao.Permission;
+import com.lb.brandingApp.auth.data.entities.Permission;
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.stereotype.Repository;
 

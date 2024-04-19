@@ -1,6 +1,6 @@
 package com.lb.brandingApp.category.repository;
 
-import com.lb.brandingApp.category.data.dao.Category;
+import com.lb.brandingApp.category.data.entities.Category;
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.stereotype.Repository;
 

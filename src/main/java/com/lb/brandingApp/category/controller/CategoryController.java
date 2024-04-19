@@ -1,11 +1,11 @@
 package com.lb.brandingApp.category.controller;
 
-import com.lb.brandingApp.category.data.dto.request.CategoryRequestDto;
-import com.lb.brandingApp.category.data.dto.request.DistrictRequestDto;
-import com.lb.brandingApp.category.data.dto.request.StateRequestDto;
-import com.lb.brandingApp.category.data.dto.response.CategoryResponseDto;
-import com.lb.brandingApp.category.data.dto.response.DistrictResponseDto;
-import com.lb.brandingApp.category.data.dto.response.StateResponseDto;
+import com.lb.brandingApp.category.data.models.request.CategoryRequestDto;
+import com.lb.brandingApp.category.data.models.request.DistrictRequestDto;
+import com.lb.brandingApp.category.data.models.request.StateRequestDto;
+import com.lb.brandingApp.category.data.models.response.CategoryResponseDto;
+import com.lb.brandingApp.category.data.models.response.DistrictResponseDto;
+import com.lb.brandingApp.category.data.models.response.StateResponseDto;
 import com.lb.brandingApp.category.service.CategoryService;
 import lombok.NonNull;
 import org.springframework.beans.factory.annotation.Autowired;

@@ -1,8 +1,8 @@
 package com.lb.brandingApp.category.repository;
 
-import com.lb.brandingApp.category.data.dao.District;
-import com.lb.brandingApp.category.data.dao.State;
-import com.lb.brandingApp.config.data.dao.DistrictConfig;
+import com.lb.brandingApp.category.data.entities.District;
+import com.lb.brandingApp.category.data.entities.State;
+import com.lb.brandingApp.config.data.entities.DistrictConfig;
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.stereotype.Repository;
 
