@@ -10,8 +10,6 @@ import com.lb.brandingApp.common.data.dao.*;
 import com.lb.brandingApp.common.repository.*;
 import com.lb.brandingApp.config.data.dao.DistrictConfig;
 import com.lb.brandingApp.config.data.dao.StateConfig;
-import com.lb.brandingApp.data.models.category.request.*;
-import com.lb.brandingApp.data.models.category.response.*;
 import com.lb.brandingApp.auth.repository.TeamRepository;
 import com.lb.brandingApp.category.repository.CategoryRepository;
 import com.lb.brandingApp.category.repository.DistrictRepository;

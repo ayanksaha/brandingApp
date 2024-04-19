@@ -12,7 +12,6 @@ import com.lb.brandingApp.common.data.enums.ApprovalStatus;
 import com.lb.brandingApp.common.data.enums.Status;
 import com.lb.brandingApp.auth.data.dto.response.TeamResponseDto;
 import com.lb.brandingApp.auth.data.dto.response.UserResponseDto;
-import com.lb.brandingApp.data.models.category.response.*;
 import lombok.Builder;
 import lombok.Getter;
 
