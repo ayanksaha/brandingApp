@@ -3,6 +3,9 @@ package com.lb.brandingApp.app.constants;
 public interface ApplicationConstants {
 
     String BEARER = "Bearer";
+    String JWT_PERMISSIONS_KEY = "permissions";
+    String JWT_TEAM_KEY = "team";
+    String JWT_USERNAME_KEY = "username";
     String AUTHORIZATION_HEADER = "Authorization";
     String NOT_FOUND = "Not Found!";
     String CATEGORY_NOT_FOUND = "Category Not Found!";

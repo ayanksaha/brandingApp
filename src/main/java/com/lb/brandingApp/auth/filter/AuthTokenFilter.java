@@ -5,7 +5,7 @@ import com.lb.brandingApp.auth.data.dao.User;
 import com.lb.brandingApp.auth.data.dto.common.PermissionDto;
 import com.lb.brandingApp.auth.data.dto.common.UserExtension;
 import com.lb.brandingApp.auth.repository.UserRepository;
-import com.lb.brandingApp.auth.utils.JwtUtils;
+import com.lb.brandingApp.auth.service.JwtUtilsService;
 import io.jsonwebtoken.Claims;
 import io.micrometer.common.util.StringUtils;
 import jakarta.servlet.FilterChain;
@@ -34,7 +34,7 @@ import static com.lb.brandingApp.app.constants.ApplicationConstants.USER_NOT_FOU
 public class AuthTokenFilter extends OncePerRequestFilter {
 
     @Autowired
-    private JwtUtils jwtUtils;
+    private JwtUtilsService jwtUtilsService;
 
     @Autowired
     private UserRepository userRepository;
@@ -46,15 +46,15 @@ public class AuthTokenFilter extends OncePerRequestFilter {
         if(StringUtils.isNotBlank(authHeader) &&
             (Objects.isNull(SecurityContextHolder.getContext().getAuthentication()) ||
                 Objects.isNull(SecurityContextHolder.getContext().getAuthentication().getPrincipal()))) {
-            String jws = JwtUtils.getJws(authHeader);
-            Claims claims = jwtUtils.parseIdToken(jws);
+            String jws = jwtUtilsService.getJws(authHeader);
+            Claims claims = jwtUtilsService.parseIdToken(jws);
             Date date = claims.getExpiration();
-            String username = jwtUtils.getUsernameFromIdClaims(claims);
+            String username = jwtUtilsService.getUsernameFromIdClaims(claims);
             User userInDb = userRepository.findByUsername(username)
                     .orElseThrow(() -> new UsernameNotFoundException(USER_NOT_FOUND));
             Team team = userInDb.getTeam();
 
-            Set<PermissionDto> permissions = jwtUtils.getPermissionsFromIdClaims(claims);
+            Set<PermissionDto> permissions = jwtUtilsService.getPermissionsFromIdClaims(claims);
 
             UserExtension user = new UserExtension(userInDb.getUsername(), userInDb.getPassword(),
                     List.of(new SimpleGrantedAuthority(team.getDescription().description())),

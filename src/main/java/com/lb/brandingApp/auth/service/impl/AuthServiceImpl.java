@@ -10,7 +10,7 @@ import com.lb.brandingApp.auth.data.dto.response.UserResponseDto;
 import com.lb.brandingApp.auth.repository.UserRepository;
 import com.lb.brandingApp.auth.repository.TeamRepository;
 import com.lb.brandingApp.auth.service.AuthService;
-import com.lb.brandingApp.auth.utils.JwtUtils;
+import com.lb.brandingApp.auth.service.JwtUtilsService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.security.authentication.AuthenticationManager;
@@ -40,7 +40,7 @@ public class AuthServiceImpl implements AuthService {
     private TeamRepository teamRepository;
 
     @Autowired
-    private JwtUtils jwtUtils;
+    private JwtUtilsService jwtUtilsService;
 
     @Autowired
     private PasswordEncoder encoder;
@@ -66,7 +66,7 @@ public class AuthServiceImpl implements AuthService {
 
         return UserResponseDto.builder()
                 .username(username)
-                .idToken(jwtUtils.generateIdToken(username, teamName, permissions))
+                .idToken(jwtUtilsService.generateIdToken(username, teamName, permissions))
                 .team(teamName)
                 .permissions(userDetails.getPermissions().stream()
                         .filter(permission -> !permission.isHttpResource())

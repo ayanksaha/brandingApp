@@ -1,6 +1,7 @@
 package com.lb.brandingApp.app.config;
 
 import com.lb.brandingApp.auth.filter.AuthTokenFilter;
+import com.lb.brandingApp.auth.service.impl.UserDetailsServiceImpl;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
@@ -25,7 +26,7 @@ import java.util.Map;
 public class SecurityConfig {
 
     @Autowired
-    UserDetailsService userDetailsService;
+    UserDetailsServiceImpl userDetailsService;
 
     @Bean
     public AuthTokenFilter authenticationJwtTokenFilter() {
