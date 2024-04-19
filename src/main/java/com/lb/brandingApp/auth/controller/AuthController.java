@@ -30,7 +30,7 @@ public class AuthController {
         return ResponseEntity.ok(response);
     }
 
-    @PostMapping("/app/password")
+    @PutMapping("/app/password")
     public ResponseEntity<Void> changePassword(@RequestBody UserRequestDto request) {
         authService.changePassword(request);
         return ResponseEntity.ok().build();
@@ -47,13 +47,13 @@ public class AuthController {
         return ResponseEntity.ok(response);
     }
 
-    @PostMapping("/app/user/password")
+    @PutMapping("/app/user/password")
     public ResponseEntity<Void> resetUserPassword(@RequestBody UserRequestDto request) {
         authService.resetUserPassword(request);
         return ResponseEntity.ok().build();
     }
 
-    @PostMapping("/app/user/activate")
+    @PutMapping("/app/user/activate")
     public ResponseEntity<Void> toggleUserActivation(@RequestBody UserRequestDto request, @RequestParam boolean activate) {
         authService.toggleUserActivation(request, activate);
         return ResponseEntity.ok().build();
@@ -64,7 +64,7 @@ public class AuthController {
         return ResponseEntity.ok(authService.registerUser(request));
     }
 
-    @PostMapping("/app/user/update")
+    @PutMapping("/app/user/update")
     public ResponseEntity<UserResponseDto> updateUser(@RequestBody RegistrationRequestDto request) {
         return ResponseEntity.ok(authService.updateUser(request));
     }
