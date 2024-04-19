@@ -32,7 +32,7 @@ public class Assignee {
     private Team assignedToTeam;
 
     @Enumerated(EnumType.STRING)
-    private Status status = Status.PENDING;
+    private Status status = Status.PENDING_APPROVAL;
 
     @ManyToOne
     @JoinColumn(name = "note_id")

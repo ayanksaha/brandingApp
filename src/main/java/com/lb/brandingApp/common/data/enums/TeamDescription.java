@@ -5,9 +5,8 @@ import lombok.experimental.Accessors;
 
 public enum TeamDescription {
     DEVELOPER("Developer"),
-    SYS_ADMIN("System Admin"),
-    ADMIN("Admin"),
-    HOD("Head Of The Department"),
+    SYS_ADMIN("System Administrator"),
+    ADMIN("Administrator"),
     APPROVAL("Approval"),
     DESIGNING("Designing"),
     PRINTING("Printing"),

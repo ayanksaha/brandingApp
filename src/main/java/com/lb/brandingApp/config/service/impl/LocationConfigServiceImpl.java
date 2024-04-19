@@ -21,7 +21,7 @@ import static com.lb.brandingApp.app.constants.ApplicationConstants.STATE_NOT_FO
 
 @Service
 @Transactional
-public class StateConfigServiceImpl implements StateConfigService {
+public class LocationConfigServiceImpl implements StateConfigService {
 
     @Autowired
     private StateConfigRepository stateConfigRepository;

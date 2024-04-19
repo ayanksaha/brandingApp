@@ -1,44 +1,42 @@
 package com.lb.brandingApp.task.service.impl;
 
+import com.lb.brandingApp.app.utils.AppUtil;
+import com.lb.brandingApp.auth.data.dao.Team;
+import com.lb.brandingApp.auth.data.dao.User;
+import com.lb.brandingApp.auth.data.dto.common.UserExtension;
+import com.lb.brandingApp.auth.data.dto.response.TeamResponseDto;
+import com.lb.brandingApp.auth.data.dto.response.UserResponseDto;
+import com.lb.brandingApp.auth.repository.TeamRepository;
+import com.lb.brandingApp.auth.repository.UserRepository;
+import com.lb.brandingApp.category.data.dao.Category;
+import com.lb.brandingApp.category.data.dao.District;
+import com.lb.brandingApp.category.data.dao.State;
 import com.lb.brandingApp.category.data.dto.response.*;
+import com.lb.brandingApp.category.repository.CategoryRepository;
+import com.lb.brandingApp.category.repository.DistrictRepository;
+import com.lb.brandingApp.category.repository.StateRepository;
 import com.lb.brandingApp.common.data.dao.*;
 import com.lb.brandingApp.common.data.enums.ApprovalStatus;
 import com.lb.brandingApp.common.data.enums.ImageReference;
 import com.lb.brandingApp.common.data.enums.Status;
 import com.lb.brandingApp.common.data.enums.TeamDescription;
-import com.lb.brandingApp.auth.data.dao.Team;
-import com.lb.brandingApp.auth.data.dao.User;
-import com.lb.brandingApp.category.data.dao.Category;
-import com.lb.brandingApp.category.data.dao.District;
-import com.lb.brandingApp.category.data.dao.State;
 import com.lb.brandingApp.common.repository.*;
 import com.lb.brandingApp.config.data.dao.ProductConfig;
+import com.lb.brandingApp.config.data.dto.response.NotesResponseDto;
+import com.lb.brandingApp.config.data.dto.response.ProductConfigResponseDto;
+import com.lb.brandingApp.config.repository.ProductConfigRepository;
 import com.lb.brandingApp.task.data.dao.Allotment;
 import com.lb.brandingApp.task.data.dao.Assignee;
 import com.lb.brandingApp.task.data.dao.Task;
-import com.lb.brandingApp.data.enums.*;
-import com.lb.brandingApp.auth.data.dto.common.UserExtension;
-import com.lb.brandingApp.auth.data.dto.response.TeamResponseDto;
-import com.lb.brandingApp.auth.data.dto.response.UserResponseDto;
-import com.lb.brandingApp.data.models.category.response.*;
-import com.lb.brandingApp.config.data.dto.response.NotesResponseDto;
-import com.lb.brandingApp.config.data.dto.response.ProductConfigResponseDto;
 import com.lb.brandingApp.task.data.dto.request.TaskRequestDto;
 import com.lb.brandingApp.task.data.dto.response.AllotmentResponseDto;
 import com.lb.brandingApp.task.data.dto.response.DimensionResponseDto;
 import com.lb.brandingApp.task.data.dto.response.ImageResponseDto;
 import com.lb.brandingApp.task.data.dto.response.TaskResponseDto;
-import com.lb.brandingApp.auth.repository.TeamRepository;
-import com.lb.brandingApp.auth.repository.UserRepository;
-import com.lb.brandingApp.category.repository.CategoryRepository;
-import com.lb.brandingApp.category.repository.DistrictRepository;
-import com.lb.brandingApp.category.repository.StateRepository;
-import com.lb.brandingApp.config.repository.ProductConfigRepository;
 import com.lb.brandingApp.task.repository.AllotmentRepository;
 import com.lb.brandingApp.task.repository.AssigneeRepository;
 import com.lb.brandingApp.task.repository.TaskRepository;
 import com.lb.brandingApp.task.service.TaskService;
-import com.lb.brandingApp.app.utils.AppUtil;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.security.core.GrantedAuthority;
@@ -53,7 +51,8 @@ import java.util.stream.Collectors;
 
 import static com.lb.brandingApp.app.constants.ApplicationConstants.*;
 import static com.lb.brandingApp.app.utils.AppUtil.*;
-import static com.lb.brandingApp.app.utils.CompressionUtil.*;
+import static com.lb.brandingApp.app.utils.CompressionUtil.unzip;
+import static com.lb.brandingApp.app.utils.CompressionUtil.zip;
 
 @Slf4j
 @Service
@@ -184,7 +183,7 @@ public class TaskServiceImpl implements TaskService {
         currentAssignee.setAssignedToTeam(categoryWorkflow.stream()
                 .min(Comparator.comparingInt(WorkflowItem::getItemNumber))
                 .orElseThrow(() -> new RuntimeException(WORKFLOW_CONFIG_ERROR)).getTeam());
-        currentAssignee.setStatus(Status.PENDING);
+        currentAssignee.setStatus(Status.PENDING_APPROVAL);
         assigneeRepository.save(currentAssignee);
         task.setCurrentAssignee(currentAssignee);
 
