@@ -14,7 +14,7 @@ import lombok.Setter;
 public class Area {
 
     @Id
-    @GeneratedValue(strategy = GenerationType.IDENTITY)
+    @GeneratedValue
     private Long id;
 
     @Column(scale = 2)

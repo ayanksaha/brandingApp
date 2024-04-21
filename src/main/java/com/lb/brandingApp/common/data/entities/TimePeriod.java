@@ -14,7 +14,7 @@ import lombok.Setter;
 public class TimePeriod {
 
     @Id
-    @GeneratedValue(strategy = GenerationType.IDENTITY)
+    @GeneratedValue
     private Long id;
 
     private Integer value;

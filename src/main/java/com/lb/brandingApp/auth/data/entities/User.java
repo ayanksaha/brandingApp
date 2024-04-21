@@ -10,8 +10,6 @@ import lombok.Setter;
 
 import java.util.Set;
 
-import static jakarta.persistence.GenerationType.IDENTITY;
-
 @Entity
 @Table(name = "user")
 @NoArgsConstructor
@@ -19,7 +17,7 @@ import static jakarta.persistence.GenerationType.IDENTITY;
 @Setter
 public class User {
     @Id
-    @GeneratedValue(strategy = IDENTITY)
+    @GeneratedValue
     private Long id;
 
     @Column(length = 50)

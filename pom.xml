@@ -16,6 +16,13 @@
 	<properties>
 		<java.version>17</java.version>
 	</properties>
+	<distributionManagement>
+		<repository>
+			<id>internal.repo</id>
+			<name>My Internal Repository</name>
+			<url>file:///Users/ayankumarsaha/.m2/repository</url>
+		</repository>
+	</distributionManagement>
 	<dependencies>
 		<!-- spring -->
 		<dependency>
@@ -44,7 +51,14 @@
 			<groupId>org.springframework.boot</groupId>
 			<artifactId>spring-boot-starter-data-jpa</artifactId>
 		</dependency>
-
+		<!-- spring -->
+		<!-- HTTP Client 5	-->
+		<dependency>
+			<groupId>org.apache.httpcomponents.client5</groupId>
+			<artifactId>httpclient5</artifactId>
+			<version>5.3.1</version>
+		</dependency>
+		<!-- HTTP Client 5	-->
 		<!-- My SQL connector -->
 		<dependency>
 			<groupId>com.mysql</groupId>
@@ -75,7 +89,7 @@
 			<artifactId>jackson-datatype-jsr310</artifactId>
 			<version>2.17.0</version>
 		</dependency>
-
+		<!-- Lombok & jackson -->
 		<!-- JWT -->
 		<dependency>
 			<groupId>io.jsonwebtoken</groupId>
@@ -92,6 +106,7 @@
 			<artifactId>jjwt-jackson</artifactId>
 			<version>0.12.5</version>
 		</dependency>
+		<!-- JWT -->
 	</dependencies>
 
 	<build>
@@ -102,6 +117,7 @@
 				<version>3.3.0-SNAPSHOT</version>
 				<configuration>
 					<executable>true</executable>
+					<classifier>exec</classifier>
 				</configuration>
 			</plugin>
 		</plugins>

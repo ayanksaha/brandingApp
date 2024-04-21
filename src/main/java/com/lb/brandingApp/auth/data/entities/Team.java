@@ -1,14 +1,14 @@
 package com.lb.brandingApp.auth.data.entities;
 
 import com.lb.brandingApp.common.data.entities.WorkflowItem;
-import com.lb.brandingApp.task.data.entities.Assignee;
 import com.lb.brandingApp.common.data.enums.TeamDescription;
+import com.lb.brandingApp.task.data.entities.Assignee;
 import jakarta.persistence.*;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
 import lombok.Setter;
+
 import java.util.Set;
-import static jakarta.persistence.GenerationType.IDENTITY;
 
 @Entity
 @Table(name = "team")
@@ -17,7 +17,7 @@ import static jakarta.persistence.GenerationType.IDENTITY;
 @Setter
 public class Team {
     @Id
-    @GeneratedValue(strategy = IDENTITY)
+    @GeneratedValue
     private Long id;
 
     @Enumerated(EnumType.STRING)

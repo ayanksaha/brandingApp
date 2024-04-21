@@ -14,7 +14,7 @@ import lombok.Setter;
 public class Amount {
 
     @Id
-    @GeneratedValue(strategy = GenerationType.IDENTITY)
+    @GeneratedValue
     private Long id;
 
     @Column(scale = 2)

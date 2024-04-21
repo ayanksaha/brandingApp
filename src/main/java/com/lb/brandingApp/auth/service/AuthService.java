@@ -111,6 +111,7 @@ public class AuthService {
                         .email(user.getEmail())
                         .phoneNumber(user.getPhoneNumber())
                         .active(user.isActive())
+                        .defaultPasswordSet(user.isDefaultPass())
                         .build())
                 .toList();
     }
@@ -124,6 +125,8 @@ public class AuthService {
                 .team(user.getTeam().getDescription().description())
                 .name(user.getName())
                 .email(user.getEmail())
+                .active(user.isActive())
+                .defaultPasswordSet(user.isDefaultPass())
                 .phoneNumber(user.getPhoneNumber())
                 .build();
     }
@@ -165,6 +168,8 @@ public class AuthService {
         User savedUser = userRepository.save(user);
         return UserResponseDto.builder()
                 .username(savedUser.getUsername())
+                .active(user.isActive())
+                .defaultPasswordSet(user.isDefaultPass())
                 .message(REGISTRATION_SUCCESSFUL)
                 .build();
     }

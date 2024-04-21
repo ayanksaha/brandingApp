@@ -16,7 +16,7 @@ import java.util.Set;
 @NoArgsConstructor
 public class ProductConfig {
     @Id
-    @GeneratedValue(strategy = GenerationType.IDENTITY)
+    @GeneratedValue
     private Long id;
 
     @Column(length = 100)

@@ -18,7 +18,7 @@ import java.util.Set;
 @NoArgsConstructor
 public class State {
     @Id
-    @GeneratedValue(strategy = GenerationType.IDENTITY)
+    @GeneratedValue
     private Long id;
 
     @ManyToOne

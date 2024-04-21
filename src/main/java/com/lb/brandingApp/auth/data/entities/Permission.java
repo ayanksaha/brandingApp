@@ -7,8 +7,6 @@ import lombok.Setter;
 
 import java.util.Set;
 
-import static jakarta.persistence.GenerationType.IDENTITY;
-
 @Entity
 @Table(name = "permission")
 @NoArgsConstructor
@@ -17,7 +15,7 @@ import static jakarta.persistence.GenerationType.IDENTITY;
 public class Permission {
 
     @Id
-    @GeneratedValue(strategy = IDENTITY)
+    @GeneratedValue
     private Long id;
 
     @Column(length = 20)

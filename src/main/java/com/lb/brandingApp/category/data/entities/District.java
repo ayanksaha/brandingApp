@@ -20,7 +20,7 @@ import java.util.Set;
 @NoArgsConstructor
 public class District {
     @Id
-    @GeneratedValue(strategy = GenerationType.IDENTITY)
+    @GeneratedValue
     private Long id;
 
     @ManyToOne

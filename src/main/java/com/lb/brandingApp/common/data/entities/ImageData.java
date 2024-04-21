@@ -16,7 +16,7 @@ import lombok.Setter;
 public class ImageData {
 
     @Id
-    @GeneratedValue(strategy = GenerationType.IDENTITY)
+    @GeneratedValue
     private Long id;
 
     private String name;

@@ -17,7 +17,7 @@ import java.util.Set;
 public class Note {
 
     @Id
-    @GeneratedValue(strategy = GenerationType.IDENTITY)
+    @GeneratedValue
     private Long id;
 
     private final String text;

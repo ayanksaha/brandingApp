@@ -20,7 +20,7 @@ import java.util.Set;
 public class Assignee {
 
     @Id
-    @GeneratedValue(strategy = GenerationType.IDENTITY)
+    @GeneratedValue
     private Long id;
 
     @ManyToOne

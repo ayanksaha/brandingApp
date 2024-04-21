@@ -5,13 +5,13 @@ import com.lb.brandingApp.category.data.models.request.DistrictRequestDto;
 import com.lb.brandingApp.category.data.models.request.StateRequestDto;
 import com.lb.brandingApp.category.data.models.response.CategoryResponseDto;
 import com.lb.brandingApp.category.data.models.response.DistrictResponseDto;
+import com.lb.brandingApp.category.data.models.response.PageResponseDto;
 import com.lb.brandingApp.category.data.models.response.StateResponseDto;
 import com.lb.brandingApp.category.service.CategoryService;
 import lombok.NonNull;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
-import java.util.List;
 
 @RestController
 public class CategoryController {
@@ -20,8 +20,10 @@ public class CategoryController {
     private CategoryService categoryService;
 
     @GetMapping("/app/categories")
-    public ResponseEntity<List<CategoryResponseDto>> fetchAllCategories(){
-        return ResponseEntity.ok(categoryService.getAllCategories());
+    public ResponseEntity<PageResponseDto<CategoryResponseDto>> fetchAllCategories(
+            @RequestParam(value = "page_no", required = false) Integer pageNumber,
+            @RequestParam(value = "page_size", required = false) Integer pageSize){
+        return ResponseEntity.ok(categoryService.getAllCategories(pageNumber, pageSize));
     }
 
     @PostMapping("/app/category")
@@ -38,8 +40,10 @@ public class CategoryController {
     }
 
     @GetMapping("/app/category/{category_id}/states")
-    public ResponseEntity<List<StateResponseDto>> getAllStates(@PathVariable("category_id") @NonNull Long categoryId) {
-        return ResponseEntity.ok(categoryService.getStatesByCategory(categoryId));
+    public ResponseEntity<PageResponseDto<StateResponseDto>> getAllStates(@PathVariable("category_id") @NonNull Long categoryId,
+           @RequestParam(value = "page_no", required = false) Integer pageNumber,
+           @RequestParam(value = "page_size", required = false) Integer pageSize) {
+        return ResponseEntity.ok(categoryService.getStatesByCategory(categoryId, pageNumber, pageSize));
     }
 
     @PostMapping("/app/category/{category_id}/state")
@@ -50,9 +54,11 @@ public class CategoryController {
     }
 
     @GetMapping("/app/category/{category_id}/state/{state_id}/districts")
-    public ResponseEntity<List<DistrictResponseDto>> getAllDistricts(
-            @PathVariable("category_id") @NonNull Long categoryId, @PathVariable("state_id") @NonNull Long stateId) {
-        return ResponseEntity.ok(categoryService.getAllDistrictsByState(categoryId, stateId));
+    public ResponseEntity<PageResponseDto<DistrictResponseDto>> getAllDistricts(
+            @PathVariable("category_id") @NonNull Long categoryId, @PathVariable("state_id") @NonNull Long stateId,
+            @RequestParam(value = "page_no", required = false) Integer pageNumber,
+            @RequestParam(value = "page_size", required = false) Integer pageSize) {
+        return ResponseEntity.ok(categoryService.getAllDistrictsByState(categoryId, stateId, pageNumber, pageSize));
     }
 
     @PostMapping("/app/category/{category_id}/state/{state_id}/district")

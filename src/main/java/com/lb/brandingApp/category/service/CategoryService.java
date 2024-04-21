@@ -7,11 +7,10 @@ import com.lb.brandingApp.category.data.entities.State;
 import com.lb.brandingApp.category.data.models.request.*;
 import com.lb.brandingApp.category.data.models.response.*;
 import com.lb.brandingApp.common.data.entities.*;
+import com.lb.brandingApp.common.data.enums.ImageReference;
+import com.lb.brandingApp.common.data.models.request.ImageRequestDto;
 import com.lb.brandingApp.common.data.models.request.TimePeriodRequestDto;
-import com.lb.brandingApp.common.data.models.response.AmountResponseDto;
-import com.lb.brandingApp.common.data.models.response.AreaResponseDto;
-import com.lb.brandingApp.common.data.models.response.QuantityResponseDto;
-import com.lb.brandingApp.common.data.models.response.TimePeriodResponseDto;
+import com.lb.brandingApp.common.data.models.response.*;
 import com.lb.brandingApp.common.repository.*;
 import com.lb.brandingApp.location.data.entities.DistrictConfig;
 import com.lb.brandingApp.location.data.entities.StateConfig;
@@ -23,6 +22,11 @@ import com.lb.brandingApp.location.repository.DistrictConfigRepository;
 import com.lb.brandingApp.location.repository.StateConfigRepository;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.beans.factory.annotation.Value;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.PageRequest;
+import org.springframework.data.domain.Pageable;
+import org.springframework.data.domain.Sort;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -30,6 +34,8 @@ import java.util.*;
 
 import static com.lb.brandingApp.app.constants.ApplicationConstants.*;
 import static com.lb.brandingApp.app.utils.AppUtil.*;
+import static com.lb.brandingApp.app.utils.CompressionUtil.unzip;
+import static com.lb.brandingApp.app.utils.CompressionUtil.zip;
 
 @Slf4j
 @Service
@@ -69,15 +75,45 @@ public class CategoryService {
     @Autowired
     private AmountRepository amountRepository;
 
-    public List<CategoryResponseDto> getAllCategories() {
-        List<CategoryResponseDto> response = categoryRepository.findAll().stream().map(category -> CategoryResponseDto.builder()
+    @Autowired
+    private ImageRepository imageRepository;
+
+    @Value("${categories.default.sort.by}")
+    private String defaultSortBy;
+
+    @Value("${default.page.size}")
+    private Integer defaultPageSize;
+
+    /*
+        Collection<AppStatusResource> data = new ArrayList<>();
+        data.add(appStatusResource1);
+        data.add(appStatusResource2);
+        data.add(appStatusResource3);
+        PagedModel.PageMetadata metadata = new PagedModel.PageMetadata(data.size(), 1, data.size(), 1);
+        PagedModel<AppStatusResource> result = new PagedModel<>(data, metadata);
+     */
+    public PageResponseDto<CategoryResponseDto> getAllCategories(Integer pageNumber, Integer pageSize) {
+        Pageable page = PageRequest.of(
+                Optional.ofNullable(pageNumber).orElse(0),
+                Optional.ofNullable(pageSize).orElse(defaultPageSize),
+                Sort.by(defaultSortBy).descending());
+        Page<Category> result = categoryRepository.findAll(page);
+        List<CategoryResponseDto> response = result.stream().map(category -> CategoryResponseDto.builder()
                 .id(category.getId())
                 .name(category.getName())
-                .validity(TimePeriodResponseDto.builder()
-                        .id(category.getValidity().getId())
-                        .value(category.getValidity().getValue())
-                        .unit(category.getValidity().getUnit())
-                        .build())
+                .icon(Objects.nonNull(category.getIcon()) ?
+                        ImageResponseDto.builder()
+                                .image(unzip(category.getIcon().getImageData()))
+                                .name(category.getIcon().getName())
+                                .build()
+                        : null)
+                .validity(Objects.nonNull(category.getValidity()) ?
+                        TimePeriodResponseDto.builder()
+                                .id(category.getValidity().getId())
+                                .value(category.getValidity().getValue())
+                                .unit(category.getValidity().getUnit())
+                                .build()
+                        : null)
                 .aggregatedAmount(AmountResponseDto.builder()
                         .value(category.getAggregatedAmount().getValue())
                         .currency(category.getAggregatedAmount().getCurrency())
@@ -93,8 +129,18 @@ public class CategoryService {
                 .workflow(getWorkflow(category))
                 .build()
         ).toList();
-        return response.stream().sorted(Comparator.comparingDouble(
-                responseDto -> ((CategoryResponseDto)responseDto).getAggregatedAmount().getValue()).reversed()).toList();
+
+        return PageResponseDto.<CategoryResponseDto>builder()
+                .content(response)
+                .metadata(
+                        PageResponseDto.PagingMetadata
+                                .builder()
+                                .pageSize(result.getNumberOfElements())
+                                .pageNumber(result.getNumber())
+                                .totalPages(result.getTotalPages())
+                                .totalElements(result.getTotalElements())
+                                .build())
+                .build();
     }
 
     LinkedHashSet<WorkflowItemResponseDto> getWorkflow(Category category) {
@@ -119,11 +165,23 @@ public class CategoryService {
         Category category = new Category();
         category.setName(request.name());
 
+        ImageRequestDto icon = request.icon();
+        if (Objects.nonNull(icon)) {
+            ImageData image = new ImageData();
+            image.setImageData(zip(icon.data()));
+            image.setName(icon.name());
+            image.setReference(ImageReference.ICON);
+            imageRepository.save(image);
+            category.setIcon(image);
+        }
+
         TimePeriodRequestDto validityRequest = request.validity();
-        TimePeriod validity = new TimePeriod();
-        validity.setUnit(validityRequest.unit());
-        validity.setValue(validityRequest.value());
-        category.setValidity(validity);
+        if (Objects.nonNull(validityRequest)) {
+            TimePeriod validity = new TimePeriod();
+            validity.setUnit(validityRequest.unit());
+            validity.setValue(validityRequest.value());
+            category.setValidity(validity);
+        }
 
         Amount aggregatedAmount = mapAmount(0.0);
         amountRepository.save(aggregatedAmount);
@@ -168,13 +226,19 @@ public class CategoryService {
                 () -> new RuntimeException(CATEGORY_NOT_FOUND));
 
         category.setName(request.name());
+
+        ImageRequestDto icon = request.icon();
+        if (Objects.nonNull(icon)) {
+            ImageData image = category.getIcon();
+            image.setImageData(zip(icon.data()));
+            image.setName(icon.name());
+            imageRepository.save(image);
+            category.setIcon(image);
+        }
+
         TimePeriodRequestDto validityRequest = request.validity();
 
         if (Objects.nonNull(validityRequest)) {
-            if (Objects.isNull(validityRequest.id())) {
-                throw new RuntimeException(VALIDITY_NOT_FOUND);
-            }
-
             TimePeriod validity = timePeriodRepository.findById(validityRequest.id()).orElseThrow(() -> new RuntimeException(VALIDITY_NOT_FOUND));
             validity.setValue(validityRequest.value());
             validity.setUnit(validityRequest.unit());
@@ -208,10 +272,15 @@ public class CategoryService {
         categoryRepository.save(category);
     }
 
-    public List<StateResponseDto> getStatesByCategory(Long categoryId) {
+    public PageResponseDto<StateResponseDto> getStatesByCategory(Long categoryId, Integer pageNumber, Integer pageSize) {
         Category category = categoryRepository.findById(categoryId).orElseThrow(
                 () -> new RuntimeException(CATEGORY_NOT_FOUND));
-        List<StateResponseDto> response = category.getStates().stream().map(
+        Pageable page = PageRequest.of(
+                Optional.ofNullable(pageNumber).orElse(0),
+                Optional.ofNullable(pageSize).orElse(defaultPageSize),
+                Sort.by(defaultSortBy).descending());
+        Page<State> result = stateRepository.findAllByCategory(category, page);
+        List<StateResponseDto> response = result.stream().map(
                 state -> StateResponseDto.builder()
                         .stateId(state.getId())
                         .stateConfigId(state.getStateConfig().getId())
@@ -230,8 +299,17 @@ public class CategoryService {
                                 .unit(state.getAggregatedArea().getUnit())
                                 .build())
                         .build()).toList();
-        return response.stream().sorted(Comparator.comparingDouble(
-                responseDto -> ((StateResponseDto) responseDto).getAggregatedAmount().getValue()).reversed()).toList();
+        return PageResponseDto.<StateResponseDto>builder()
+                .content(response)
+                .metadata(
+                        PageResponseDto.PagingMetadata
+                                .builder()
+                                .pageSize(result.getNumberOfElements())
+                                .pageNumber(result.getNumber())
+                                .totalPages(result.getTotalPages())
+                                .totalElements(result.getTotalElements())
+                                .build())
+                .build();
     }
 
     @Transactional(rollbackFor = {RuntimeException.class, Exception.class})
@@ -265,14 +343,19 @@ public class CategoryService {
         stateRepository.save(state);
     }
 
-    public List<DistrictResponseDto> getAllDistrictsByState(Long categoryId, Long stateId) {
+    public PageResponseDto<DistrictResponseDto> getAllDistrictsByState(Long categoryId, Long stateId, Integer pageNumber, Integer pageSize) {
         Category category = categoryRepository.findById(categoryId)
                 .orElseThrow(() -> new RuntimeException(CATEGORY_NOT_FOUND));
         Set<State> states = category.getStates();
 
         for (State state : states) {
             if (stateId.longValue() == state.getId().longValue()) {
-                return state.getDistricts().stream().map(
+                Pageable page = PageRequest.of(
+                        Optional.ofNullable(pageNumber).orElse(0),
+                        Optional.ofNullable(pageSize).orElse(defaultPageSize),
+                        Sort.by(defaultSortBy).descending());
+                Page<District> result = districtRepository.findAllByState(state, page);
+                List<DistrictResponseDto> response = result.stream().map(
                         district -> DistrictResponseDto.builder()
                                 .districtId(district.getId())
                                 .districtConfigId(district.getDistrictConfig().getId())
@@ -291,11 +374,21 @@ public class CategoryService {
                                         .value(district.getAggregatedArea().getValue())
                                         .unit(district.getAggregatedArea().getUnit())
                                         .build())
-                                .build()
-                ).sorted(Comparator.comparingDouble(district -> ((DistrictResponseDto) district).getAggregatedAmount().getValue()).reversed()).toList();
+                                .build()).toList();
+                return PageResponseDto.<DistrictResponseDto>builder()
+                        .content(response)
+                        .metadata(
+                                PageResponseDto.PagingMetadata
+                                        .builder()
+                                        .pageSize(result.getNumberOfElements())
+                                        .pageNumber(result.getNumber())
+                                        .totalPages(result.getTotalPages())
+                                        .totalElements(result.getTotalElements())
+                                        .build())
+                        .build();
             }
         }
-        return new ArrayList<>();
+        throw new RuntimeException(STATE_NOT_FOUND);
     }
 
     @Transactional(rollbackFor = {Exception.class, RuntimeException.class})

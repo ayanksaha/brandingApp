@@ -36,7 +36,7 @@ public class SecurityConfig {
     @Bean
     public SecurityFilterChain securityFilterChain(HttpSecurity http) throws Exception {
         http.authorizeHttpRequests((authorize) ->
-                    authorize.requestMatchers("/app/login", "/error")
+                    authorize.requestMatchers("/app/login", "/error", "/app/user/register")
                         .permitAll().anyRequest().authenticated())
                 .csrf(AbstractHttpConfigurer::disable).cors(AbstractHttpConfigurer::disable);
         http.addFilterBefore(authenticationJwtTokenFilter(), UsernamePasswordAuthenticationFilter.class);

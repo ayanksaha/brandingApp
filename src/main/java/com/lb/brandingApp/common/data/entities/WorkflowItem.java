@@ -16,7 +16,7 @@ import lombok.Setter;
 public class WorkflowItem {
 
     @Id
-    @GeneratedValue(strategy = GenerationType.IDENTITY)
+    @GeneratedValue
     private Long id;
 
     private Integer itemNumber;

@@ -16,7 +16,7 @@ import java.util.Set;
 @Setter
 public class Category {
     @Id
-    @GeneratedValue(strategy = GenerationType.IDENTITY)
+    @GeneratedValue
     private Long id;
 
     @Column(length = 50)
@@ -40,4 +40,7 @@ public class Category {
 
     @OneToOne
     private TimePeriod validity;
+
+    @OneToOne
+    private ImageData icon;
 }
