@@ -1,14 +1,15 @@
 package com.lb.brandingApp.location.controller;
 
-import com.lb.brandingApp.location.data.models.request.DistrictConfigRequestDto;
-import com.lb.brandingApp.location.data.models.request.StateConfigRequestDto;
 import com.lb.brandingApp.location.data.models.response.DistrictConfigResponseDto;
 import com.lb.brandingApp.location.data.models.response.StateConfigResponseDto;
 import com.lb.brandingApp.location.service.LocationConfigService;
 import lombok.NonNull;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.ResponseEntity;
-import org.springframework.web.bind.annotation.*;
+import org.springframework.web.bind.annotation.GetMapping;
+import org.springframework.web.bind.annotation.PathVariable;
+import org.springframework.web.bind.annotation.RequestParam;
+import org.springframework.web.bind.annotation.RestController;
 
 import java.util.List;
 
@@ -18,26 +19,17 @@ public class LocationController {
     private LocationConfigService locationConfigService;
 
     @GetMapping("/app/config/states")
-    public ResponseEntity<List<StateConfigResponseDto>> getAllStates() {
-        return ResponseEntity.ok(locationConfigService.getAllStates());
+    public ResponseEntity<List<StateConfigResponseDto>> getAllStates(
+            @RequestParam(value = "category_id", required = false) Long categoryId){
+        return ResponseEntity.ok(locationConfigService.getAllStates(categoryId));
     }
 
-    @PostMapping("/app/config/state")
-    public ResponseEntity<Void> addState(@RequestBody StateConfigRequestDto request) {
-        locationConfigService.addState(request);
-        return ResponseEntity.ok().build();
-    }
-
-    @GetMapping("/app/config/state/{state_id}/districts")
+    @GetMapping("/app/config/state/{state_config_id}/districts")
     public ResponseEntity<List<DistrictConfigResponseDto>> getAllDistrictsByState(
-            @NonNull @PathVariable("state_id") Long stateId) {
-        return ResponseEntity.ok(locationConfigService.getAllDistrictsByState(stateId));
+            @NonNull @PathVariable("state_config_id") Long stateConfigId,
+            @RequestParam(value = "state_id", required = false) Long stateId,
+            @RequestParam(value = "category_id", required = false) Long categoryId) {
+        return ResponseEntity.ok(locationConfigService.getAllDistrictsByState(categoryId, stateConfigId, stateId));
     }
 
-    @PostMapping("/app/config/state/{state_id}/district")
-    public ResponseEntity<Void> addDistrict(@NonNull @PathVariable("state_id") Long stateId,
-                                            @RequestBody DistrictConfigRequestDto request) {
-        locationConfigService.addDistrictToState(stateId, request);
-        return ResponseEntity.ok().build();
-    }
 }

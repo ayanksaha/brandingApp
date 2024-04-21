@@ -16,6 +16,7 @@ import java.util.Objects;
 import static com.lb.brandingApp.app.constants.ApplicationConstants.PRODUCT_NOT_FOUND;
 import static com.lb.brandingApp.app.utils.AppUtil.mapAmount;
 
+//Dropdown values will not be paginated.
 @Service
 @Transactional
 public class ProductConfigService {

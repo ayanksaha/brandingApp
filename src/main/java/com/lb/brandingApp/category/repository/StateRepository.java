@@ -14,5 +14,8 @@ import java.util.Optional;
 public interface StateRepository extends JpaRepository<State, Long> {
 
     Optional<State> findByStateConfigAndCategory(StateConfig stateConfig, Category category);
+
     Page<State> findAllByCategory(Category category, Pageable page);
+
+    Optional<State> findByIdAndCategory(Long stateId, Category category);
 }

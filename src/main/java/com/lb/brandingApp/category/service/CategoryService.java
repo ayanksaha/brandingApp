@@ -224,51 +224,18 @@ public class CategoryService {
     public void updateCategory(Long categoryId, CategoryRequestDto request) {
         Category category = categoryRepository.findById(categoryId).orElseThrow(
                 () -> new RuntimeException(CATEGORY_NOT_FOUND));
-
-        category.setName(request.name());
-
-        ImageRequestDto icon = request.icon();
-        if (Objects.nonNull(icon)) {
+        String categoryName = request.name();
+        if(Objects.nonNull(categoryName)) {
+            category.setName(categoryName);
+        }
+        ImageRequestDto categoryIcon = request.icon();
+        if (Objects.nonNull(categoryIcon)) {
             ImageData image = category.getIcon();
-            image.setImageData(zip(icon.data()));
-            image.setName(icon.name());
+            image.setImageData(zip(categoryIcon.data()));
+            image.setName(categoryIcon.name());
             imageRepository.save(image);
             category.setIcon(image);
         }
-
-        TimePeriodRequestDto validityRequest = request.validity();
-
-        if (Objects.nonNull(validityRequest)) {
-            TimePeriod validity = timePeriodRepository.findById(validityRequest.id()).orElseThrow(() -> new RuntimeException(VALIDITY_NOT_FOUND));
-            validity.setValue(validityRequest.value());
-            validity.setUnit(validityRequest.unit());
-            timePeriodRepository.save(validity);
-
-            category.setValidity(validity);
-        }
-
-        Set<WorkflowItem> workflow = new LinkedHashSet<>();
-
-        //Setting workflow for newer tasks only
-        for (WorkflowItemRequestDto workflowItem : request.workflow()) {
-            Team team = teamRepository.findById(workflowItem.id())
-                    .orElseThrow(() -> new RuntimeException(TEAM_NOT_FOUND));
-            Optional<WorkflowItem> workflowItemInDb = workflowItemRepository.findByCategoryAndTaskAndTeam(category, null, team);
-            WorkflowItem item;
-            if (workflowItemInDb.isEmpty()) {
-                workflowItemInDb = workflowItemRepository.findByCategoryAndTaskAndTeam(null, null, team);
-            }
-            if (workflowItemInDb.isEmpty()) {
-                item = new WorkflowItem();
-                item.setTeam(team);
-                item.setItemNumber(workflowItem.order());
-                workflowItemRepository.save(item);
-            } else {
-                item = workflowItemInDb.get();
-            }
-            workflow.add(item);
-        }
-        category.setWorkflow(workflow);
         categoryRepository.save(category);
     }
 
@@ -346,49 +313,44 @@ public class CategoryService {
     public PageResponseDto<DistrictResponseDto> getAllDistrictsByState(Long categoryId, Long stateId, Integer pageNumber, Integer pageSize) {
         Category category = categoryRepository.findById(categoryId)
                 .orElseThrow(() -> new RuntimeException(CATEGORY_NOT_FOUND));
-        Set<State> states = category.getStates();
-
-        for (State state : states) {
-            if (stateId.longValue() == state.getId().longValue()) {
-                Pageable page = PageRequest.of(
-                        Optional.ofNullable(pageNumber).orElse(0),
-                        Optional.ofNullable(pageSize).orElse(defaultPageSize),
-                        Sort.by(defaultSortBy).descending());
-                Page<District> result = districtRepository.findAllByState(state, page);
-                List<DistrictResponseDto> response = result.stream().map(
-                        district -> DistrictResponseDto.builder()
-                                .districtId(district.getId())
-                                .districtConfigId(district.getDistrictConfig().getId())
-                                .name(district.getDistrictConfig().getName())
-                                .stateId(district.getState().getId())
-                                .categoryId(district.getState().getCategory().getId())
-                                .aggregatedAmount(AmountResponseDto.builder()
-                                        .value(district.getAggregatedAmount().getValue())
-                                        .currency(district.getAggregatedAmount().getCurrency())
-                                        .build())
-                                .aggregatedQuantity(QuantityResponseDto.builder()
-                                        .value(district.getAggregatedQuantity().getValue())
-                                        .unit(district.getAggregatedQuantity().getUom())
-                                        .build())
-                                .aggregatedArea(AreaResponseDto.builder()
-                                        .value(district.getAggregatedArea().getValue())
-                                        .unit(district.getAggregatedArea().getUnit())
-                                        .build())
-                                .build()).toList();
-                return PageResponseDto.<DistrictResponseDto>builder()
-                        .content(response)
-                        .metadata(
-                                PageResponseDto.PagingMetadata
-                                        .builder()
-                                        .pageSize(result.getNumberOfElements())
-                                        .pageNumber(result.getNumber())
-                                        .totalPages(result.getTotalPages())
-                                        .totalElements(result.getTotalElements())
-                                        .build())
-                        .build();
-            }
-        }
-        throw new RuntimeException(STATE_NOT_FOUND);
+        State state = stateRepository.findByIdAndCategory(stateId, category)
+                .orElseThrow(() -> new RuntimeException(STATE_NOT_FOUND));
+        Pageable page = PageRequest.of(
+                Optional.ofNullable(pageNumber).orElse(0),
+                Optional.ofNullable(pageSize).orElse(defaultPageSize),
+                Sort.by(defaultSortBy).descending());
+        Page<District> result = districtRepository.findAllByState(state, page);
+        List<DistrictResponseDto> response = result.stream().map(
+                district -> DistrictResponseDto.builder()
+                        .districtId(district.getId())
+                        .districtConfigId(district.getDistrictConfig().getId())
+                        .name(district.getDistrictConfig().getName())
+                        .stateId(district.getState().getId())
+                        .categoryId(district.getState().getCategory().getId())
+                        .aggregatedAmount(AmountResponseDto.builder()
+                                .value(district.getAggregatedAmount().getValue())
+                                .currency(district.getAggregatedAmount().getCurrency())
+                                .build())
+                        .aggregatedQuantity(QuantityResponseDto.builder()
+                                .value(district.getAggregatedQuantity().getValue())
+                                .unit(district.getAggregatedQuantity().getUom())
+                                .build())
+                        .aggregatedArea(AreaResponseDto.builder()
+                                .value(district.getAggregatedArea().getValue())
+                                .unit(district.getAggregatedArea().getUnit())
+                                .build())
+                        .build()).toList();
+        return PageResponseDto.<DistrictResponseDto>builder()
+                .content(response)
+                .metadata(
+                        PageResponseDto.PagingMetadata
+                                .builder()
+                                .pageSize(result.getNumberOfElements())
+                                .pageNumber(result.getNumber())
+                                .totalPages(result.getTotalPages())
+                                .totalElements(result.getTotalElements())
+                                .build())
+                .build();
     }
 
     @Transactional(rollbackFor = {Exception.class, RuntimeException.class})
