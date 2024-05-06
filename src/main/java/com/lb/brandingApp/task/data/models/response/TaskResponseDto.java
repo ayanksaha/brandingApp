@@ -7,15 +7,17 @@ import com.fasterxml.jackson.databind.annotation.JsonDeserialize;
 import com.fasterxml.jackson.databind.annotation.JsonSerialize;
 import com.fasterxml.jackson.datatype.jsr310.deser.LocalDateTimeDeserializer;
 import com.fasterxml.jackson.datatype.jsr310.ser.LocalDateTimeSerializer;
-import com.lb.brandingApp.category.data.models.response.*;
+import com.lb.brandingApp.auth.data.models.response.TeamResponseDto;
+import com.lb.brandingApp.auth.data.models.response.UserResponseDto;
+import com.lb.brandingApp.category.data.models.response.CategoryResponseDto;
+import com.lb.brandingApp.category.data.models.response.DistrictResponseDto;
+import com.lb.brandingApp.category.data.models.response.StateResponseDto;
+import com.lb.brandingApp.common.data.enums.ApprovalStatus;
+import com.lb.brandingApp.common.data.enums.Status;
 import com.lb.brandingApp.common.data.models.response.AmountResponseDto;
 import com.lb.brandingApp.common.data.models.response.AreaResponseDto;
 import com.lb.brandingApp.common.data.models.response.ImageResponseDto;
 import com.lb.brandingApp.common.data.models.response.QuantityResponseDto;
-import com.lb.brandingApp.common.data.enums.ApprovalStatus;
-import com.lb.brandingApp.common.data.enums.Status;
-import com.lb.brandingApp.auth.data.models.response.TeamResponseDto;
-import com.lb.brandingApp.auth.data.models.response.UserResponseDto;
 import lombok.Builder;
 import lombok.Getter;
 
@@ -30,8 +32,6 @@ public class TaskResponseDto {
     private Long id;
 
     private String name;
-
-    private List<WorkflowItemResponseDto> workflow;
 
     private String location;
 
@@ -54,7 +54,6 @@ public class TaskResponseDto {
     @JsonSerialize(using = LocalDateTimeSerializer.class)
     @JsonFormat(shape = JsonFormat.Shape.STRING, pattern = "dd-MM-yyyy HH:mm:ss")
     @JsonProperty("end_date")
-    @JsonInclude
     private LocalDateTime endDate;
 
     private List<AllotmentResponseDto> allotments;
@@ -74,14 +73,6 @@ public class TaskResponseDto {
     @JsonFormat(shape = JsonFormat.Shape.STRING, pattern = "dd-MM-yyyy HH:mm:ss")
     private LocalDateTime expiry;
 
-    private UserResponseDto assignee;
-
-    @JsonProperty("assigned_team")
-    private TeamResponseDto assignedTeam;
-
-    @JsonProperty("next_team")
-    private TeamResponseDto nextTeam;
-
     private Status status;
 
     @JsonProperty("images")
@@ -91,7 +82,6 @@ public class TaskResponseDto {
     @JsonSerialize(using = LocalDateTimeSerializer.class)
     @JsonFormat(shape = JsonFormat.Shape.STRING, pattern = "dd-MM-yyyy HH:mm:ss")
     @JsonProperty("verified_at")
-    @JsonInclude
     private LocalDateTime verifiedAt;
 
     @JsonDeserialize(using = LocalDateTimeDeserializer.class)

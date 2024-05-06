@@ -6,6 +6,7 @@ import com.lb.brandingApp.common.data.enums.TeamDescription;
 import java.util.List;
 
 public record TeamRequestDto (
+        Long id,
         @JsonProperty("name") TeamDescription description,
         @JsonProperty("home_page_uri") String homePage,
 

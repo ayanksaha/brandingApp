@@ -4,6 +4,7 @@ import com.lb.brandingApp.task.data.entities.Allotment;
 import com.lb.brandingApp.task.data.entities.Assignee;
 import jakarta.persistence.*;
 import lombok.Getter;
+import lombok.NoArgsConstructor;
 import lombok.RequiredArgsConstructor;
 import lombok.Setter;
 
@@ -13,14 +14,14 @@ import java.util.Set;
 @Table(name = "notes")
 @Getter
 @Setter
-@RequiredArgsConstructor
+@NoArgsConstructor
 public class Note {
 
     @Id
     @GeneratedValue
     private Long id;
 
-    private final String text;
+    private String text;
 
     @ManyToOne
     @JoinColumn(name = "allotment_id", nullable = false)

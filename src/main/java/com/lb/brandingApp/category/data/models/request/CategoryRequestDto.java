@@ -9,7 +9,5 @@ import java.util.LinkedHashSet;
 @JsonIgnoreProperties(ignoreUnknown = true)
 public record CategoryRequestDto (
         String name,
-        LinkedHashSet<WorkflowItemRequestDto> workflow,
-        TimePeriodRequestDto validity,
         ImageRequestDto icon
 ) {}

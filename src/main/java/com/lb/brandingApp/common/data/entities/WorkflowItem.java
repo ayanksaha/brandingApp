@@ -1,8 +1,7 @@
 package com.lb.brandingApp.common.data.entities;
 
 import com.lb.brandingApp.auth.data.entities.Team;
-import com.lb.brandingApp.category.data.entities.Category;
-import com.lb.brandingApp.task.data.entities.Task;
+import com.lb.brandingApp.product.data.entities.ProductConfig;
 import jakarta.persistence.*;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
@@ -19,17 +18,15 @@ public class WorkflowItem {
     @GeneratedValue
     private Long id;
 
-    private Integer itemNumber;
+    @Column(name = "item_sequence")
+    private Integer sequence;
 
     @ManyToOne
     @JoinColumn(name = "team_id")
     private Team team;
 
     @ManyToOne
-    @JoinColumn(name = "category_id")
-    private Category category;
+    @JoinColumn(name = "product_config_id")
+    private ProductConfig productConfig;
 
-    @ManyToOne
-    @JoinColumn(name = "task_id")
-    private Task task;
 }

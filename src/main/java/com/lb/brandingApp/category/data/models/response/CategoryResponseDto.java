@@ -26,7 +26,4 @@ public class CategoryResponseDto {
     @JsonProperty("aggregated_amount")
     private AmountResponseDto aggregatedAmount;
 
-    private LinkedHashSet<WorkflowItemResponseDto> workflow;
-
-    private TimePeriodResponseDto validity;
 }

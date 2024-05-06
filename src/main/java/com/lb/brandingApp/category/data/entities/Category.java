@@ -1,6 +1,10 @@
 package com.lb.brandingApp.category.data.entities;
 
-import com.lb.brandingApp.common.data.entities.*;
+import com.lb.brandingApp.common.data.entities.Amount;
+import com.lb.brandingApp.common.data.entities.Area;
+import com.lb.brandingApp.common.data.entities.ImageData;
+import com.lb.brandingApp.common.data.entities.Quantity;
+import com.lb.brandingApp.product.data.entities.ProductConfig;
 import jakarta.persistence.*;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
@@ -34,13 +38,10 @@ public class Category {
     @OneToMany(mappedBy = "category")
     private Set<State> states = new HashSet<>();
 
-    @OneToMany(cascade = CascadeType.ALL)
-    @JoinColumn(name = "category_id")
-    private Set<WorkflowItem> workflow;
-
-    @OneToOne
-    private TimePeriod validity;
-
     @OneToOne
     private ImageData icon;
+
+    @OneToMany
+    @JoinColumn(name = "category_id")
+    private Set<ProductConfig> products;
 }

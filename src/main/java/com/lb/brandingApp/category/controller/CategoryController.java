@@ -21,9 +21,11 @@ public class CategoryController {
 
     @GetMapping("/app/categories")
     public ResponseEntity<PageResponseDto<CategoryResponseDto>> fetchAllCategories(
-            @RequestParam(value = "page_no", required = false) Integer pageNumber,
-            @RequestParam(value = "page_size", required = false) Integer pageSize){
-        return ResponseEntity.ok(categoryService.getAllCategories(pageNumber, pageSize));
+            @RequestParam(value = "page_number", required = false) Integer pageNumber,
+            @RequestParam(value = "page_size", required = false) Integer pageSize,
+            @RequestParam(value = "sort_by", required = false) String sortBy,
+            @RequestParam(value = "sort_order", required = false) String sortOrder){
+        return ResponseEntity.ok(categoryService.getAllCategories(pageNumber, pageSize, sortOrder, sortBy));
     }
 
     @PostMapping("/app/category")
@@ -41,9 +43,11 @@ public class CategoryController {
 
     @GetMapping("/app/category/{category_id}/states")
     public ResponseEntity<PageResponseDto<StateResponseDto>> getAllStates(@PathVariable("category_id") @NonNull Long categoryId,
-           @RequestParam(value = "page_no", required = false) Integer pageNumber,
-           @RequestParam(value = "page_size", required = false) Integer pageSize) {
-        return ResponseEntity.ok(categoryService.getStatesByCategory(categoryId, pageNumber, pageSize));
+           @RequestParam(value = "page_number", required = false) Integer pageNumber,
+           @RequestParam(value = "page_size", required = false) Integer pageSize,
+           @RequestParam(value = "sort_by", required = false) String sortBy,
+           @RequestParam(value = "sort_order", required = false) String sortOrder) {
+        return ResponseEntity.ok(categoryService.getStatesByCategory(categoryId, pageNumber, pageSize, sortOrder, sortBy));
     }
 
     @PostMapping("/app/category/{category_id}/state")
@@ -56,9 +60,11 @@ public class CategoryController {
     @GetMapping("/app/category/{category_id}/state/{state_id}/districts")
     public ResponseEntity<PageResponseDto<DistrictResponseDto>> getAllDistricts(
             @PathVariable("category_id") @NonNull Long categoryId, @PathVariable("state_id") @NonNull Long stateId,
-            @RequestParam(value = "page_no", required = false) Integer pageNumber,
-            @RequestParam(value = "page_size", required = false) Integer pageSize) {
-        return ResponseEntity.ok(categoryService.getAllDistrictsByState(categoryId, stateId, pageNumber, pageSize));
+            @RequestParam(value = "page_number", required = false) Integer pageNumber,
+            @RequestParam(value = "page_size", required = false) Integer pageSize,
+            @RequestParam(value = "sort_by", required = false) String sortBy,
+            @RequestParam(value = "sort_order", required = false) String sortOrder) {
+        return ResponseEntity.ok(categoryService.getAllDistrictsByState(categoryId, stateId, pageNumber, pageSize, sortOrder, sortBy));
     }
 
     @PostMapping("/app/category/{category_id}/state/{state_id}/district")

@@ -9,6 +9,7 @@ import com.lb.brandingApp.auth.data.models.response.PermissionResponseDto;
 import com.lb.brandingApp.auth.data.models.response.UserResponseDto;
 import com.lb.brandingApp.auth.repository.UserRepository;
 import com.lb.brandingApp.auth.repository.TeamRepository;
+import lombok.NonNull;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.security.authentication.AuthenticationManager;
@@ -21,7 +22,9 @@ import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
+import java.util.ArrayList;
 import java.util.List;
+import java.util.Objects;
 import java.util.Set;
 import java.util.stream.Collectors;
 
@@ -98,11 +101,17 @@ public class AuthService {
         userRepository.save(userInDb);
     }
 
-    public List<UserResponseDto> getAllUsers(boolean fetchActive) {
+    public List<UserResponseDto> getAllUsers(boolean fetchActive, String name) {
         UserExtension userDetails = (UserExtension) SecurityContextHolder.getContext().getAuthentication().getPrincipal();
         String username = userDetails.getUsername();
-        return userRepository.findAll().stream()
-                .filter(user -> !user.getUsername().equals(username))
+        List<User> result;
+        //TODO Pagination & Generalise
+        if(Objects.nonNull(name)) {
+            result = userRepository.findAllByNameContaining(name);
+        } else {
+            result = userRepository.findAll();
+        }
+        return result.stream().filter(user -> !user.getUsername().equals(username))
                 .filter(user -> user.isActive() == fetchActive)
                 .map(user -> UserResponseDto.builder()
                         .username(user.getUsername())

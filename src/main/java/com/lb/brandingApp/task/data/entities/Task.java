@@ -2,7 +2,10 @@ package com.lb.brandingApp.task.data.entities;
 
 import com.lb.brandingApp.auth.data.entities.User;
 import com.lb.brandingApp.category.data.entities.District;
-import com.lb.brandingApp.common.data.entities.*;
+import com.lb.brandingApp.common.data.entities.Amount;
+import com.lb.brandingApp.common.data.entities.Area;
+import com.lb.brandingApp.common.data.entities.ImageData;
+import com.lb.brandingApp.common.data.entities.Quantity;
 import com.lb.brandingApp.common.data.enums.ApprovalStatus;
 import jakarta.persistence.*;
 import lombok.Getter;
@@ -24,10 +27,6 @@ public class Task {
 
     @Column(length = 50)
     private String name;
-
-    @OneToMany
-    @JoinColumn(name = "task_id")
-    private Set<WorkflowItem> workflow;
 
     private String location;
 
@@ -59,25 +58,14 @@ public class Task {
     @Enumerated(EnumType.STRING)
     private ApprovalStatus approvalStatus;
 
+    @Column(columnDefinition = "TIMESTAMP")
+    private LocalDateTime approvedAt;
+
     @OneToOne
     private Amount rent;
 
-    @Column(columnDefinition = "TIMESTAMP")
-    private LocalDateTime expiry;
-
-    @ManyToOne
-    @JoinColumn(name = "assignee_id", nullable = false)
-    private Assignee currentAssignee;
-
-    @ManyToMany
-    @JoinTable(
-            name = "earlier_assignments",
-            joinColumns = @JoinColumn(name = "task_id"),
-            inverseJoinColumns = @JoinColumn(name = "assignee_id"))
-    private Set<Assignee> earlierAssignees;
-
     @OneToMany(mappedBy = "task")
-    private Set<ImageData> referenceImages;
+    private Set<ImageData> finalImages;
 
     @ManyToOne
     @JoinColumn(name = "created_by")

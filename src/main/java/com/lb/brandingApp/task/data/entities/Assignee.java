@@ -23,6 +23,8 @@ public class Assignee {
     @GeneratedValue
     private Long id;
 
+    private int sequence;
+
     @ManyToOne
     @JoinColumn(name = "user_id")
     private User assignedTo;
@@ -32,18 +34,21 @@ public class Assignee {
     private Team assignedToTeam;
 
     @Enumerated(EnumType.STRING)
-    private Status status = Status.PENDING_APPROVAL;
+    private Status status = Status.PENDING;
 
     @ManyToOne
     @JoinColumn(name = "note_id")
     private Note note;
 
     @ManyToMany(mappedBy = "earlierAssignees")
-    private Set<Task> task;
+    private Set<Allotment> earlierAssignments;
+
+    @ManyToMany(mappedBy = "futureAssignees")
+    private Set<Allotment> futureAssignments;
 
     @OneToMany
     @JoinColumn(name = "assignee_id")
-    private Set<Task> currentAssignments;
+    private Set<Allotment> currentAssignments;
 
     @Column(columnDefinition = "TIMESTAMP")
     private LocalDateTime startDate;

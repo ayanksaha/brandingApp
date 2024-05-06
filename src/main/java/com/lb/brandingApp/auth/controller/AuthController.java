@@ -26,8 +26,7 @@ public class AuthController {
 
     @PostMapping("/app/login")
     public ResponseEntity<UserResponseDto> authenticate(@RequestBody UserRequestDto request) {
-        UserResponseDto response = authService.authenticate(request);
-        return ResponseEntity.ok(response);
+        return ResponseEntity.ok(authService.authenticate(request));
     }
 
     @PutMapping("/app/password")
@@ -37,14 +36,15 @@ public class AuthController {
     }
 
     @GetMapping("/app/users")
-    public ResponseEntity<List<UserResponseDto>> getAllUsers(@RequestParam("active") @NonNull boolean fetchActive) {
-        return ResponseEntity.ok(authService.getAllUsers(fetchActive));
+    public ResponseEntity<List<UserResponseDto>> getAllUsers(
+            @RequestParam("active") boolean fetchActive,
+            @RequestParam(value = "name", required = false) String name) {
+        return ResponseEntity.ok(authService.getAllUsers(fetchActive, name));
     }
 
     @GetMapping("/app/user/{username}")
     public ResponseEntity<UserResponseDto> getUser(@PathVariable("username") @NonNull String username) {
-        UserResponseDto response = authService.getUser(username);
-        return ResponseEntity.ok(response);
+        return ResponseEntity.ok(authService.getUser(username));
     }
 
     @PutMapping("/app/user/password")

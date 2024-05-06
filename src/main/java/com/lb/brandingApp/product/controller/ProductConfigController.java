@@ -15,21 +15,24 @@ public class ProductConfigController {
     @Autowired
     private ProductConfigService productConfigService;
 
-    @GetMapping("/app/config/products")
-    public ResponseEntity<List<ProductConfigResponseDto>> getAllProducts() {
-        return ResponseEntity.ok(productConfigService.getAllProductConfigs());
+    @GetMapping("/app/category/{category_id}/config/products")
+    public ResponseEntity<List<ProductConfigResponseDto>> getAllProducts(
+            @NonNull @PathVariable("category_id") Long categoryId) {
+        return ResponseEntity.ok(productConfigService.getAllProductConfigs(categoryId));
     }
 
-    @PostMapping("/app/config/product")
-    public ResponseEntity<Void> addProduct(@RequestBody ProductConfigRequestDto request) {
-        productConfigService.addProductConfig(request);
+    @PostMapping("/app/category/{category_id}/config/product")
+    public ResponseEntity<Void> addProduct(
+            @NonNull @PathVariable("category_id") Long categoryId, @RequestBody ProductConfigRequestDto request) {
+        productConfigService.addProductConfig(categoryId, request);
         return ResponseEntity.ok().build();
     }
 
-    @PutMapping("/app/config/product/{product_id}")
-    public ResponseEntity<Void> updateProduct(@NonNull @PathVariable("product_id") Long productId,
+    @PutMapping("/app/category/{category_id}/config/product/{product_id}")
+    public ResponseEntity<Void> updateProduct(
+            @NonNull @PathVariable("category_id") Long categoryId, @NonNull @PathVariable("product_id") Long productId,
             @RequestBody ProductConfigRequestDto request) {
-        productConfigService.updateProductConfig(productId, request);
+        productConfigService.updateProductConfig(productId, categoryId, request);
         return ResponseEntity.ok().build();
     }
 

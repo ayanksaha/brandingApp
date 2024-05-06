@@ -5,6 +5,7 @@ import com.lb.brandingApp.auth.data.entities.User;
 import com.lb.brandingApp.auth.data.models.common.UserExtension;
 import com.lb.brandingApp.auth.repository.UserRepository;
 import com.lb.brandingApp.app.utils.AppUtil;
+import com.lb.brandingApp.common.mapper.CommonMapper;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.security.core.authority.SimpleGrantedAuthority;
 import org.springframework.security.core.userdetails.UserDetails;
@@ -20,6 +21,9 @@ public class UserService implements UserDetailsService {
     @Autowired
     private UserRepository userRepository;
 
+    @Autowired
+    private CommonMapper commonMapper;
+
     @Override
     public UserDetails loadUserByUsername(String username) throws UsernameNotFoundException {
         User user = userRepository.findByUsername(username)
@@ -30,7 +34,7 @@ public class UserService implements UserDetailsService {
                 user.getName(),
                 user.getEmail(),
                 user.getPhoneNumber(),
-                AppUtil.mapPermissions(user.getTeam().getPermissions()),
+                commonMapper.mapPermissions(user.getTeam().getPermissions()),
                 team.getHomePageUri(),
                 user.isActive(),
                 user.isDefaultPass());

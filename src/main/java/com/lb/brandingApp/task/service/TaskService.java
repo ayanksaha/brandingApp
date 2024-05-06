@@ -4,43 +4,41 @@ import com.lb.brandingApp.app.utils.AppUtil;
 import com.lb.brandingApp.auth.data.entities.Team;
 import com.lb.brandingApp.auth.data.entities.User;
 import com.lb.brandingApp.auth.data.models.common.UserExtension;
-import com.lb.brandingApp.auth.data.models.response.TeamResponseDto;
-import com.lb.brandingApp.auth.data.models.response.UserResponseDto;
 import com.lb.brandingApp.auth.repository.TeamRepository;
 import com.lb.brandingApp.auth.repository.UserRepository;
 import com.lb.brandingApp.category.data.entities.Category;
 import com.lb.brandingApp.category.data.entities.District;
 import com.lb.brandingApp.category.data.entities.State;
-import com.lb.brandingApp.category.data.models.response.*;
+import com.lb.brandingApp.category.data.models.response.PageResponseDto;
 import com.lb.brandingApp.category.repository.CategoryRepository;
 import com.lb.brandingApp.category.repository.DistrictRepository;
 import com.lb.brandingApp.category.repository.StateRepository;
 import com.lb.brandingApp.common.data.entities.*;
-import com.lb.brandingApp.common.data.models.response.AmountResponseDto;
-import com.lb.brandingApp.common.data.models.response.AreaResponseDto;
-import com.lb.brandingApp.common.data.models.response.QuantityResponseDto;
 import com.lb.brandingApp.common.data.enums.ApprovalStatus;
 import com.lb.brandingApp.common.data.enums.ImageReference;
 import com.lb.brandingApp.common.data.enums.Status;
 import com.lb.brandingApp.common.data.enums.TeamDescription;
+import com.lb.brandingApp.common.data.models.request.AmountRequestDto;
+import com.lb.brandingApp.common.mapper.CommonMapper;
 import com.lb.brandingApp.common.repository.*;
 import com.lb.brandingApp.product.data.entities.ProductConfig;
-import com.lb.brandingApp.task.data.models.response.NotesResponseDto;
-import com.lb.brandingApp.product.data.models.response.ProductConfigResponseDto;
 import com.lb.brandingApp.product.repository.ProductConfigRepository;
 import com.lb.brandingApp.task.data.entities.Allotment;
 import com.lb.brandingApp.task.data.entities.Assignee;
 import com.lb.brandingApp.task.data.entities.Task;
 import com.lb.brandingApp.task.data.models.request.TaskRequestDto;
-import com.lb.brandingApp.task.data.models.response.AllotmentResponseDto;
-import com.lb.brandingApp.common.data.models.response.DimensionResponseDto;
-import com.lb.brandingApp.common.data.models.response.ImageResponseDto;
 import com.lb.brandingApp.task.data.models.response.TaskResponseDto;
+import com.lb.brandingApp.task.mspper.TaskMapper;
 import com.lb.brandingApp.task.repository.AllotmentRepository;
 import com.lb.brandingApp.task.repository.AssigneeRepository;
 import com.lb.brandingApp.task.repository.TaskRepository;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.beans.factory.annotation.Value;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.PageRequest;
+import org.springframework.data.domain.Pageable;
+import org.springframework.data.domain.Sort;
 import org.springframework.security.core.GrantedAuthority;
 import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.stereotype.Service;
@@ -48,12 +46,12 @@ import org.springframework.transaction.annotation.Transactional;
 
 import java.time.LocalDateTime;
 import java.util.*;
+import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.concurrent.atomic.AtomicReference;
 import java.util.stream.Collectors;
 
 import static com.lb.brandingApp.app.constants.ApplicationConstants.*;
 import static com.lb.brandingApp.app.utils.AppUtil.*;
-import static com.lb.brandingApp.app.utils.CompressionUtil.unzip;
 import static com.lb.brandingApp.app.utils.CompressionUtil.zip;
 
 @Slf4j
@@ -86,12 +84,6 @@ public class TaskService {
     private UserRepository userRepository;
 
     @Autowired
-    private AssigneeRepository assigneeRepository;
-
-    @Autowired
-    private WorkflowItemRepository workflowItemRepository;
-
-    @Autowired
     private ImageRepository imageRepository;
 
     @Autowired
@@ -106,8 +98,26 @@ public class TaskService {
     @Autowired
     private AmountRepository amountRepository;
 
-    public List<TaskResponseDto> getAllTasks(Long categoryId, Long stateId, Long districtId) {
+    @Autowired
+    private AssigneeRepository assigneeRepository;
 
+    @Autowired
+    private TaskMapper taskMapper;
+
+    @Autowired
+    private CommonMapper commonMapper;
+
+    @Value("${tasks.default.sort.by}")
+    private String defaultSortBy;
+
+    @Value("${tasks.default.sort.order}")
+    private String defaultSortOrder;
+
+    @Value("${default.page.size}")
+    private Integer defaultPageSize;
+
+    public PageResponseDto<TaskResponseDto> getAllTasks(Long categoryId, Long stateId, Long districtId, Integer
+            pageNumber, Integer pageSize, String sortBy, String sortOrder) {
         Category category = categoryRepository.findById(categoryId)
                 .orElseThrow(() -> new RuntimeException(CATEGORY_NOT_FOUND));
         State state = category.getStates().stream()
@@ -116,14 +126,27 @@ public class TaskService {
         District district = state.getDistricts().stream()
                 .filter(districtInDB -> districtInDB.getId().longValue() == districtId).findAny()
                 .orElseThrow(() -> new RuntimeException(DISTRICT_NOT_FOUND));
-        return district.getTasks().stream()
-                .map(this::mapTaskResponse).sorted(Comparator.comparing(
-                        TaskResponseDto::getCreatedAt).reversed()).toList();
+        Pageable page = PageRequest.of(
+                Optional.ofNullable(pageNumber).orElse(0),
+                Optional.ofNullable(pageSize).orElse(defaultPageSize),
+                Sort.by(Sort.Direction.valueOf(Optional.ofNullable(sortOrder).orElse(defaultSortOrder)),
+                        Optional.ofNullable(sortBy).orElse(defaultSortBy)));
+        Page<Task> result = taskRepository.findAllByDistrict(district, page);
+        List<TaskResponseDto> response = result.stream().map(task -> taskMapper.mapTaskListResponse(task)).toList();
+        return PageResponseDto.<TaskResponseDto>builder()
+                .content(response)
+                .metadata(PageResponseDto.PagingMetadata
+                        .builder()
+                        .pageSize(result.getNumberOfElements())
+                        .pageNumber(result.getNumber())
+                        .totalPages(result.getTotalPages())
+                        .totalElements(result.getTotalElements())
+                        .build())
+                .build();
     }
 
-    public List<TaskResponseDto> getAllTasksByTeam() {
+    public PageResponseDto<TaskResponseDto> getAllTasksByTeam(Integer pageNumber, Integer pageSize, String sortBy, String sortOrder) {
         UserExtension user = (UserExtension) SecurityContextHolder.getContext().getAuthentication().getPrincipal();
-
         List<String> authorities = user.getAuthorities().stream().map(
                 GrantedAuthority::getAuthority).toList();
         if (authorities.isEmpty()) {
@@ -131,14 +154,64 @@ public class TaskService {
         }
 
         TeamDescription description = AppUtil.getTeamDescriptionByDescription(authorities.get(0));
-        Team userTeam = teamRepository.findByDescription(description)
+        Team currentUserTeam = teamRepository.findByDescription(description)
                 .orElseThrow(() -> new RuntimeException(TEAM_NOT_FOUND));
-        Set<Assignee> assignees = userTeam.getAssignees();
-        List<TaskResponseDto> assignments = new ArrayList<>();
-        for (Assignee assignee : assignees) {
-            assignments.addAll(assignee.getCurrentAssignments().stream().map(this::mapTaskResponse).toList());
-        }
-        return assignments.stream().sorted(Comparator.comparingLong(TaskResponseDto::getId)).toList();
+        Pageable page = PageRequest.of(
+                Optional.ofNullable(pageNumber).orElse(0),
+                Optional.ofNullable(pageSize).orElse(defaultPageSize),
+                Sort.by(Sort.Direction.valueOf(Optional.ofNullable(sortOrder).orElse(defaultSortOrder)),
+                        Optional.ofNullable(sortBy).orElse(defaultSortBy)));
+        Page<Task> result = taskRepository.findAllByAllotments_CurrentAssignee_AssignedToTeam(currentUserTeam, page);
+        List<TaskResponseDto> response = result.stream().map(task -> taskMapper.mapTaskListResponse(task)).toList();
+        return PageResponseDto.<TaskResponseDto>builder()
+                .content(response)
+                .metadata(PageResponseDto.PagingMetadata
+                        .builder()
+                        .pageSize(result.getNumberOfElements())
+                        .pageNumber(result.getNumber())
+                        .totalPages(result.getTotalPages())
+                        .totalElements(result.getTotalElements())
+                        .build())
+                .build();
+//        Set<Assignee> assignees = currentUserTeam.getAssignees();
+//        Set<Task> assignedTasks = assignees.stream().flatMap(assignee-> assignee.getCurrentAssignments().stream())
+//                .map(Allotment::getTask).collect(Collectors.toSet());
+//        List<TaskResponseDto> assignments = assignedTasks.stream().map(this::mapTaskResponse).toList();
+//        return assignments.stream().sorted(Comparator.comparing(TaskResponseDto::getCreatedAt).reversed()).toList();
+    }
+
+    public PageResponseDto<TaskResponseDto> getAllTasksByUser(Integer pageNumber, Integer pageSize, String sortBy, String sortOrder) {
+        UserExtension user = (UserExtension) SecurityContextHolder.getContext().getAuthentication().getPrincipal();
+        User currentUser = userRepository.findByUsername(user.getUsername())
+                .orElseThrow(() -> new RuntimeException(USER_NOT_FOUND));
+
+        Pageable page = PageRequest.of(
+                Optional.ofNullable(pageNumber).orElse(0),
+                Optional.ofNullable(pageSize).orElse(defaultPageSize),
+                Sort.by(Sort.Direction.valueOf(Optional.ofNullable(sortOrder).orElse(defaultSortOrder)),
+                        Optional.ofNullable(sortBy).orElse(defaultSortBy)));
+        Page<Task> result = taskRepository.findAllByAllotments_CurrentAssignee_AssignedTo(currentUser, page);
+        List<TaskResponseDto> response = result.stream().map(task -> taskMapper.mapTaskListResponse(task)).toList();
+        return PageResponseDto.<TaskResponseDto>builder()
+                .content(response)
+                .metadata(PageResponseDto.PagingMetadata
+                        .builder()
+                        .pageSize(result.getNumberOfElements())
+                        .pageNumber(result.getNumber())
+                        .totalPages(result.getTotalPages())
+                        .totalElements(result.getTotalElements())
+                        .build())
+                .build();
+//        Set<Assignee> assignees = currentUser.getAssignees();
+//        Set<Task> assignedTasks = assignees.stream().flatMap(assignee-> assignee.getCurrentAssignments().stream())
+//                .map(Allotment::getTask).collect(Collectors.toSet());
+//        List<TaskResponseDto> assignments = assignedTasks.stream().map(this::mapTaskResponse).toList();
+//        return assignments.stream().sorted(Comparator.comparing(TaskResponseDto::getCreatedAt).reversed()).toList();
+    }
+
+    public TaskResponseDto getTaskById(Long taskId) {
+        Task task = taskRepository.findById(taskId).orElseThrow(() -> new RuntimeException(TASK_NOT_FOUND));
+        return taskMapper.mapTaskDetailResponse(task);
     }
 
     @Transactional(rollbackFor = {Exception.class, RuntimeException.class})
@@ -158,37 +231,11 @@ public class TaskService {
         task.setDistrict(district);
         State state = district.getState();
         Category category = state.getCategory();
-        Set<WorkflowItem> categoryWorkflow = category.getWorkflow();
-        Set<WorkflowItem> taskWorkflow = new HashSet<>();
-
-        for (WorkflowItem categoryWorkflowItem : categoryWorkflow) {
-            Team team = categoryWorkflowItem.getTeam();
-            Optional<WorkflowItem> workflowItemInDb = workflowItemRepository
-                    .findByCategoryAndTaskAndTeam(null, null, team);
-            WorkflowItem taskWorkflowItem;
-            if (workflowItemInDb.isEmpty()) {
-                taskWorkflowItem = new WorkflowItem();
-                taskWorkflowItem.setTeam(team);
-                taskWorkflowItem.setItemNumber(categoryWorkflowItem.getItemNumber());
-            } else {
-                taskWorkflowItem = workflowItemInDb.get();
-            }
-            taskWorkflow.add(taskWorkflowItem);
-        }
-        workflowItemRepository.saveAll(taskWorkflow);
-        task.setWorkflow(taskWorkflow);
-
-        Assignee currentAssignee = new Assignee();
-        currentAssignee.setAssignedToTeam(categoryWorkflow.stream()
-                .min(Comparator.comparingInt(WorkflowItem::getItemNumber))
-                .orElseThrow(() -> new RuntimeException(WORKFLOW_CONFIG_ERROR)).getTeam());
-        currentAssignee.setStatus(Status.PENDING_APPROVAL);
-        assigneeRepository.save(currentAssignee);
-        task.setCurrentAssignee(currentAssignee);
 
         AtomicReference<Double> aggregatedArea = new AtomicReference<>(0.0);
         AtomicReference<Integer> aggregatedQty = new AtomicReference<>(0);
         AtomicReference<Double> aggregatedAmt = new AtomicReference<>(0.0);
+        AtomicBoolean isTaskPendingApproval = new AtomicBoolean(false);
 
         Set<Allotment> allotments = request.allotments().stream().map(allotmentRequestDto -> {
 
@@ -199,23 +246,25 @@ public class TaskService {
                         ImageData image = new ImageData();
                         image.setImageData(zip(imageRequestDto.data()));
                         image.setName(imageRequestDto.name());
-                        image.setReference(imageRequestDto.type());
+                        image.setReference(ImageReference.INITIAL);
                         referenceImages.add(image);
                     }
             );
             imageRepository.saveAll(referenceImages);
             allotment.setReferenceImages(referenceImages);
 
-            Dimension dimension = mapDimension(
+            Dimension dimension = commonMapper.mapDimension(
                     allotmentRequestDto.dimension().length(), allotmentRequestDto.dimension().width());
             dimensionRepository.save(dimension);
             allotment.setDimension(dimension);
 
-            allotment.setNotes(Set.of(new Note(allotmentRequestDto.noteText())));
+            Note note = new Note();
+            note.setText(allotmentRequestDto.noteText());
+            allotment.setNotes(Set.of(note));
 
             int qtyValue = allotmentRequestDto.quantity().value();
             aggregatedQty.updateAndGet(v -> (v + qtyValue));
-            Quantity qty = mapQuantity(qtyValue);
+            Quantity qty = commonMapper.mapQuantity(qtyValue);
             quantityRepository.save(qty);
             allotment.setQuantity(qty);
 
@@ -223,9 +272,38 @@ public class TaskService {
                     .orElseThrow(() -> new RuntimeException(PRODUCT_NOT_FOUND));
             allotment.setProductConfig(productConfig);
 
+            Set<WorkflowItem> productWorkflow = productConfig.getWorkflow().stream()
+                    .sorted(Comparator.comparingInt(WorkflowItem::getSequence))
+                    .collect(Collectors.toCollection(LinkedHashSet::new));
+            Set<Assignee> futureAssignees = new LinkedHashSet<>();
+
+            for (WorkflowItem item : productWorkflow) {
+                Assignee futureAssignee = new Assignee();
+                futureAssignee.setSequence(item.getSequence());
+                futureAssignee.setAssignedToTeam(item.getTeam());
+                futureAssignee.setStatus(Status.PENDING);
+                futureAssignees.add(futureAssignee);
+            }
+
+            Assignee currentAssignee = futureAssignees.stream().min(Comparator.comparingInt(Assignee::getSequence))
+                    .orElseThrow(() -> new RuntimeException(ASSIGNEE_CANT_BE_NULL));
+            if (currentAssignee.getAssignedToTeam().getDescription() == TeamDescription.APPROVAL) {
+                isTaskPendingApproval.set(true);
+                currentAssignee.setStatus(Status.PENDING_APPROVAL);
+                allotment.setApprovalStatus(ApprovalStatus.PENDING_APPROVAL);
+            } else {
+                allotment.setApprovalStatus(ApprovalStatus.NOT_REQUIRED);
+            }
+            assigneeRepository.save(currentAssignee);
+            allotment.setCurrentAssignee(currentAssignee);
+
+            futureAssignees.remove(currentAssignee);
+            assigneeRepository.saveAll(futureAssignees);
+            allotment.setFutureAssignees(futureAssignees);
+
             double calculateArea = calculateArea(dimension);
             aggregatedArea.updateAndGet(v -> (v + calculateArea));
-            Area area = mapArea(calculateArea);
+            Area area = commonMapper.mapArea(calculateArea);
             areaRepository.save(area);
             allotment.setArea(area);
 
@@ -233,7 +311,7 @@ public class TaskService {
             double totalAllotmentAmt = (calculateArea > 0) ? (unitAmt.getValue() * calculateArea)
                     : (unitAmt.getValue() * qtyValue);
             aggregatedAmt.updateAndGet(v -> (v + totalAllotmentAmt));
-            Amount amount = mapAmount(totalAllotmentAmt);
+            Amount amount = commonMapper.mapAmount(totalAllotmentAmt);
             amountRepository.save(amount);
             allotment.setAmount(amount);
 
@@ -246,18 +324,24 @@ public class TaskService {
 
         }).collect(Collectors.toSet());
 
+        if (isTaskPendingApproval.get()) {
+            task.setApprovalStatus(ApprovalStatus.PENDING_APPROVAL);
+        } else {
+            task.setApprovalStatus(ApprovalStatus.NOT_REQUIRED);
+        }
+
         allotmentRepository.saveAll(allotments);
         task.setAllotments(allotments);
 
-        Area taskAggregatedArea = mapArea(aggregatedArea.get());
+        Area taskAggregatedArea = commonMapper.mapArea(aggregatedArea.get());
         areaRepository.save(taskAggregatedArea);
         task.setAggregatedArea(taskAggregatedArea);
 
-        Amount taskAggregatedAmt = mapAmount(aggregatedAmt.get());
+        Amount taskAggregatedAmt = commonMapper.mapAmount(aggregatedAmt.get());
         amountRepository.save(taskAggregatedAmt);
         task.setAggregatedAmount(taskAggregatedAmt);
 
-        Quantity taskAggregatedQty = mapQuantity(aggregatedQty.get());
+        Quantity taskAggregatedQty = commonMapper.mapQuantity(aggregatedQty.get());
         quantityRepository.save(taskAggregatedQty);
         task.setAggregatedQuantity(taskAggregatedQty);
 
@@ -311,9 +395,12 @@ public class TaskService {
 
         task.setApprovalStatus(ApprovalStatus.PENDING_APPROVAL);
 
-        Amount rent = mapAmount(request.rent().value());
-        amountRepository.save(rent);
-        task.setRent(rent);
+        AmountRequestDto requestedRent = request.rent();
+        if(Objects.nonNull(requestedRent)) {
+            Amount rent = commonMapper.mapAmount(requestedRent.value());
+            amountRepository.save(rent);
+            task.setRent(rent);
+        }
 
         task.setCreatedBy(user);
         task.setCreatedAt(LocalDateTime.now());
@@ -323,224 +410,13 @@ public class TaskService {
         taskRepository.save(task);
     }
 
-    public TaskResponseDto getTaskById(Long taskId) {
-        Task task = taskRepository.findById(taskId).orElseThrow(() -> new RuntimeException(TASK_NOT_FOUND));
-        return mapTaskDetailResponse(task);
+    @Transactional(rollbackFor = {Exception.class, RuntimeException.class})
+    public void updateTask(Long taskId, TaskRequestDto request) {
+
     }
 
-    private TaskResponseDto mapTaskDetailResponse(Task task) {
-        User createdBy = task.getCreatedBy();
-        User lastModifiedBy = task.getLastModifiedBy();
+    @Transactional(rollbackFor = {Exception.class, RuntimeException.class})
+    public void approveAndAssignNext(Long taskId, TaskRequestDto request) {
 
-        List<WorkflowItemResponseDto> workflowResponse = task.getWorkflow().stream().map(
-                item -> {
-                    Team team = item.getTeam();
-                    return WorkflowItemResponseDto.builder()
-                            .teamId(team.getId())
-                            .description(team.getDescription().description())
-                            .name(team.getDescription().name())
-                            .order(item.getItemNumber())
-                            .build();
-                }
-        ).sorted(Comparator.comparingLong(WorkflowItemResponseDto::getOrder)).toList();
-
-        Assignee currentAssignee = task.getCurrentAssignee();
-        TeamResponseDto next = null;
-        if (Objects.nonNull(currentAssignee.getAssignedToTeam())) {
-            Iterator<WorkflowItemResponseDto> iterator = workflowResponse.iterator();
-            while (iterator.hasNext()) {
-                WorkflowItemResponseDto item = iterator.next();
-                if (item.getTeamId().longValue() == currentAssignee.getAssignedToTeam().getId()
-                        && iterator.hasNext()) {
-                    WorkflowItemResponseDto nextItem = iterator.next();
-                    next = TeamResponseDto.builder()
-                            .teamId(nextItem.getTeamId())
-                            .teamName(nextItem.getName())
-                            .teamDescription(nextItem.getDescription())
-                            .build();
-                }
-            }
-        }
-
-        return TaskResponseDto.builder()
-                .id(task.getId())
-                .name(task.getName())
-                .workflow(workflowResponse)
-                .location(task.getLocation())
-                .district(DistrictResponseDto.builder()
-                        .name(task.getDistrict().getDistrictConfig().getName())
-                        .build())
-                .state(StateResponseDto.builder()
-                        .name(task.getDistrict().getState().getStateConfig().getName())
-                        .build())
-                .category(CategoryResponseDto.builder()
-                        .name(task.getDistrict().getState().getCategory().getName())
-                        .build())
-                .mobileNumber(task.getMobileNumber())
-                .startDate(task.getStartDate())
-                .endDate(task.getEndDate())
-                .allotments(
-                        task.getAllotments().stream().map(
-                                allotment -> AllotmentResponseDto.builder()
-                                        .area(AreaResponseDto.builder()
-                                                .unit(allotment.getArea().getUnit())
-                                                .value(allotment.getArea().getValue())
-                                                .build())
-                                        .dimension(DimensionResponseDto.builder()
-                                                .length(allotment.getDimension().getLength())
-                                                .width(allotment.getDimension().getWidth())
-                                                .unit(allotment.getDimension().getUnit())
-                                                .build())
-                                        .product(ProductConfigResponseDto.builder()
-                                                .unitAmount(allotment.getProductConfig().getAmount())
-                                                .name(allotment.getProductConfig().getName())
-                                                .build())
-                                        .notes(allotment.getNotes().stream().map(
-                                                note -> NotesResponseDto.builder()
-                                                        .text(note.getText())
-                                                        .build()
-                                        ).toList())
-                                        .quantity(QuantityResponseDto.builder()
-                                                .unit(allotment.getQuantity().getUom())
-                                                .value(allotment.getQuantity().getValue())
-                                                .build())
-                                        .amount(AmountResponseDto.builder()
-                                                .currency(allotment.getAmount().getCurrency())
-                                                .value(allotment.getAmount().getValue())
-                                                .build())
-                                        .approvalStatus(allotment.getApprovalStatus())
-                                        .createdAt(allotment.getCreatedAt())
-                                        .createdBy(UserResponseDto.builder()
-                                                .username(allotment.getCreatedBy().getUsername())
-                                                .name(allotment.getCreatedBy().getName())
-                                                .email(allotment.getCreatedBy().getEmail())
-                                                .phoneNumber(allotment.getCreatedBy().getPhoneNumber())
-                                                .build())
-                                        .lastModifiedAt(allotment.getLastModifiedAt())
-                                        .lastModifiedBy(UserResponseDto.builder()
-                                                .username(allotment.getModifiedBy().getUsername())
-                                                .name(allotment.getModifiedBy().getName())
-                                                .email(allotment.getModifiedBy().getEmail())
-                                                .phoneNumber(allotment.getModifiedBy().getPhoneNumber())
-                                                .build())
-                                        .images(allotment.getReferenceImages().stream().map(
-                                                imageData -> ImageResponseDto.builder()
-                                                        .image(unzip(imageData.getImageData()))
-                                                        .name(imageData.getName())
-                                                        .build()
-                                        ).toList())
-                                        .build()
-                        ).toList()
-                )
-                .quantity(QuantityResponseDto.builder()
-                        .value(task.getAggregatedQuantity().getValue())
-                        .unit(task.getAggregatedQuantity().getUom())
-                        .build())
-                .area(AreaResponseDto.builder()
-                        .value(task.getAggregatedArea().getValue())
-                        .unit(task.getAggregatedArea().getUnit())
-                        .build())
-                .amount(AmountResponseDto.builder()
-                        .value(task.getAggregatedAmount().getValue())
-                        .currency(task.getAggregatedAmount().getCurrency())
-                        .build())
-                .approvalStatus(task.getApprovalStatus())
-                .rent(AmountResponseDto.builder()
-                        .value(task.getRent().getValue())
-                        .currency(task.getRent().getCurrency())
-                        .build())
-                .expiry(task.getExpiry())
-                .assignee(
-                        Objects.isNull(currentAssignee.getAssignedTo()) ? null
-                                : UserResponseDto.builder()
-                                .username(currentAssignee.getAssignedTo().getUsername())
-                                .name(currentAssignee.getAssignedTo().getName())
-                                .email(currentAssignee.getAssignedTo().getEmail())
-                                .phoneNumber(currentAssignee.getAssignedTo().getPhoneNumber())
-                                .build())
-                .nextTeam(next)
-                .assignedTeam(TeamResponseDto.builder()
-                        .teamDescription(currentAssignee.getAssignedToTeam().getDescription().description())
-                        .teamName(currentAssignee.getAssignedToTeam().getDescription().name())
-                        .teamId(currentAssignee.getAssignedToTeam().getId())
-                        .build())
-                .status(getStatus(task))
-                .images(task.getReferenceImages().stream()
-                        .map(imageData -> ImageResponseDto.builder()
-                                .image(unzip(imageData.getImageData()))
-                                .name(imageData.getName())
-                                .build()
-                        ).toList())
-                .createdAt(task.getCreatedAt())
-                .createdBy(
-                        UserResponseDto.builder()
-                                .username(createdBy.getUsername())
-                                .name(createdBy.getName())
-                                .email(createdBy.getEmail())
-                                .phoneNumber(createdBy.getPhoneNumber())
-                                .build())
-                .lastModifiedAt(task.getLastModifiedAt())
-                .lastModifiedBy(
-                        UserResponseDto.builder()
-                                .username(lastModifiedBy.getUsername())
-                                .name(lastModifiedBy.getName())
-                                .email(lastModifiedBy.getEmail())
-                                .phoneNumber(lastModifiedBy.getPhoneNumber())
-                                .build())
-                .build();
-    }
-
-    private TaskResponseDto mapTaskResponse(Task task) {
-        User createdBy = task.getCreatedBy();
-        User lastModifiedBy = task.getLastModifiedBy();
-
-        return TaskResponseDto.builder()
-                .id(task.getId())
-                .name(task.getName())
-                .endDate(task.getEndDate())
-                .images(task.getReferenceImages().stream().filter(
-                                image -> image.getReference() == ImageReference.FINAL)
-                        .map(imageData -> ImageResponseDto.builder()
-                                .name(imageData.getName())
-                                .image(unzip(imageData.getImageData()))
-                                .build()
-                        ).toList())
-                .status(getStatus(task))
-                .expiry(task.getExpiry())
-                .verifiedAt(task.getEarlierAssignees().stream().filter(
-                        assignee -> assignee.getAssignedToTeam().getDescription() == TeamDescription.VERIFICATION
-                ).findFirst().map(Assignee::getEndDate).orElse(null))
-                .createdAt(task.getCreatedAt())
-                .createdBy(
-                        UserResponseDto.builder()
-                                .username(createdBy.getUsername())
-                                .name(createdBy.getName())
-                                .email(createdBy.getEmail())
-                                .phoneNumber(createdBy.getPhoneNumber())
-                                .build())
-                .lastModifiedAt(task.getLastModifiedAt())
-                .lastModifiedBy(
-                        UserResponseDto.builder()
-                                .username(lastModifiedBy.getUsername())
-                                .name(lastModifiedBy.getName())
-                                .email(lastModifiedBy.getEmail())
-                                .phoneNumber(lastModifiedBy.getPhoneNumber())
-                                .build())
-                .build();
-    }
-
-    private Status getStatus(Task task) {
-
-        Assignee currentAssignee = task.getCurrentAssignee();
-        Status status = Status.PENDING;
-        if (Objects.nonNull(currentAssignee) && Objects.nonNull(currentAssignee.getAssignedTo())) {
-            status = currentAssignee.getStatus();
-        } else if (task.getEarlierAssignees().size() == task.getWorkflow().size()
-                && task.getEarlierAssignees().stream().map(Assignee::getAssignedToTeam).collect(Collectors.toSet())
-                .containsAll(task.getWorkflow().stream().map(WorkflowItem::getTeam).toList())
-                && task.getEarlierAssignees().stream().allMatch(earlierAssignee -> earlierAssignee.getStatus() == Status.DONE)) {
-            status = Status.DONE;
-        }
-        return status;
     }
 }

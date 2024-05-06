@@ -44,13 +44,34 @@ public class Allotment {
     @Enumerated(EnumType.STRING)
     private ApprovalStatus approvalStatus;
 
+    @Column(columnDefinition = "TIMESTAMP")
+    private LocalDateTime expiry;
+
     @ManyToOne
-    @JoinColumn(name = "allotment_id")
-    private Task task;
+    @JoinColumn(name = "assignee_id", nullable = false)
+    private Assignee currentAssignee;
+
+    @ManyToMany
+    @JoinTable(
+            name = "earlier_assignments",
+            joinColumns = @JoinColumn(name = "allotment_id"),
+            inverseJoinColumns = @JoinColumn(name = "assignee_id"))
+    private Set<Assignee> earlierAssignees;
+
+    @ManyToMany
+    @JoinTable(
+            name = "future_assignments",
+            joinColumns = @JoinColumn(name = "allotment_id"),
+            inverseJoinColumns = @JoinColumn(name = "assignee_id"))
+    private Set<Assignee> futureAssignees;
 
     @OneToMany
     @JoinColumn(name = "allotment_id")
     private Set<ImageData> referenceImages;
+
+    @ManyToOne
+    @JoinColumn(name = "allotment_id")
+    private Task task;
 
     @ManyToOne
     @JoinColumn(name = "created_by")

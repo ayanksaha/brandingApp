@@ -23,4 +23,7 @@ public interface ApplicationConstants {
     String DISTRICT_ALREADY_CONFIGURED = "District Already configured!";
     String WORKFLOW_CONFIG_ERROR = "Workflow Not Configured Properly!";
 
+    String WORKFLOW_INCONSISTENT_ERROR = "Updating Workflow May result in inconsistencies!";
+    String ASSIGNEE_CANT_BE_NULL = "Current Assignee can't be null";
+
 }

@@ -4,6 +4,7 @@ import com.fasterxml.jackson.annotation.JsonInclude;
 import com.fasterxml.jackson.annotation.JsonProperty;
 import lombok.Builder;
 import lombok.Getter;
+import lombok.experimental.Accessors;
 
 import java.util.Set;
 
@@ -33,8 +34,10 @@ public class UserResponseDto {
 
     private String message;
 
-    private boolean active;
+    @Accessors(fluent = true)
+    private Boolean active;
 
     @JsonProperty(value = "default_password_set")
-    private boolean defaultPasswordSet;
+    @Accessors(fluent = true)
+    private Boolean defaultPasswordSet;
 }

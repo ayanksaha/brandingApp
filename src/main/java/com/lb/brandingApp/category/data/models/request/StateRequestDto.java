@@ -4,5 +4,5 @@ import com.fasterxml.jackson.annotation.JsonProperty;
 import lombok.NonNull;
 
 public record StateRequestDto (
-        @JsonProperty("state_id") @NonNull Long stateId
+        @JsonProperty("config_id") @NonNull Long stateConfigId
 ) {}

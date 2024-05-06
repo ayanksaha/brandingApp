@@ -20,7 +20,7 @@ public class User {
     @GeneratedValue
     private Long id;
 
-    @Column(length = 50)
+    @Column(length = 50, unique = true)
     private String username;
 
     @Column(length = 200)

@@ -1,23 +1,24 @@
 package com.lb.brandingApp.category.service;
 
-import com.lb.brandingApp.auth.data.entities.Team;
+import com.lb.brandingApp.auth.repository.TeamRepository;
 import com.lb.brandingApp.category.data.entities.Category;
 import com.lb.brandingApp.category.data.entities.District;
 import com.lb.brandingApp.category.data.entities.State;
-import com.lb.brandingApp.category.data.models.request.*;
+import com.lb.brandingApp.category.data.models.request.CategoryRequestDto;
+import com.lb.brandingApp.category.data.models.request.DistrictRequestDto;
+import com.lb.brandingApp.category.data.models.request.StateRequestDto;
 import com.lb.brandingApp.category.data.models.response.*;
-import com.lb.brandingApp.common.data.entities.*;
-import com.lb.brandingApp.common.data.enums.ImageReference;
-import com.lb.brandingApp.common.data.models.request.ImageRequestDto;
-import com.lb.brandingApp.common.data.models.request.TimePeriodRequestDto;
-import com.lb.brandingApp.common.data.models.response.*;
-import com.lb.brandingApp.common.repository.*;
-import com.lb.brandingApp.location.data.entities.DistrictConfig;
-import com.lb.brandingApp.location.data.entities.StateConfig;
-import com.lb.brandingApp.auth.repository.TeamRepository;
 import com.lb.brandingApp.category.repository.CategoryRepository;
 import com.lb.brandingApp.category.repository.DistrictRepository;
 import com.lb.brandingApp.category.repository.StateRepository;
+import com.lb.brandingApp.common.data.entities.*;
+import com.lb.brandingApp.common.data.enums.ImageReference;
+import com.lb.brandingApp.common.data.models.request.ImageRequestDto;
+import com.lb.brandingApp.common.data.models.response.*;
+import com.lb.brandingApp.common.mapper.CommonMapper;
+import com.lb.brandingApp.common.repository.*;
+import com.lb.brandingApp.location.data.entities.DistrictConfig;
+import com.lb.brandingApp.location.data.entities.StateConfig;
 import com.lb.brandingApp.location.repository.DistrictConfigRepository;
 import com.lb.brandingApp.location.repository.StateConfigRepository;
 import lombok.extern.slf4j.Slf4j;
@@ -78,8 +79,14 @@ public class CategoryService {
     @Autowired
     private ImageRepository imageRepository;
 
+    @Autowired
+    private CommonMapper commonMapper;
+
     @Value("${categories.default.sort.by}")
     private String defaultSortBy;
+
+    @Value("${categories.default.sort.order}")
+    private String defaultSortOrder;
 
     @Value("${default.page.size}")
     private Integer defaultPageSize;
@@ -92,11 +99,13 @@ public class CategoryService {
         PagedModel.PageMetadata metadata = new PagedModel.PageMetadata(data.size(), 1, data.size(), 1);
         PagedModel<AppStatusResource> result = new PagedModel<>(data, metadata);
      */
-    public PageResponseDto<CategoryResponseDto> getAllCategories(Integer pageNumber, Integer pageSize) {
+    public PageResponseDto<CategoryResponseDto> getAllCategories(
+            Integer pageNumber, Integer pageSize, String sortOrder, String sortBy) {
         Pageable page = PageRequest.of(
                 Optional.ofNullable(pageNumber).orElse(0),
                 Optional.ofNullable(pageSize).orElse(defaultPageSize),
-                Sort.by(defaultSortBy).descending());
+                Sort.by(Sort.Direction.valueOf(Optional.ofNullable(sortOrder).orElse(defaultSortOrder)),
+                Optional.ofNullable(sortBy).orElse(defaultSortBy)));
         Page<Category> result = categoryRepository.findAll(page);
         List<CategoryResponseDto> response = result.stream().map(category -> CategoryResponseDto.builder()
                 .id(category.getId())
@@ -105,13 +114,6 @@ public class CategoryService {
                         ImageResponseDto.builder()
                                 .image(unzip(category.getIcon().getImageData()))
                                 .name(category.getIcon().getName())
-                                .build()
-                        : null)
-                .validity(Objects.nonNull(category.getValidity()) ?
-                        TimePeriodResponseDto.builder()
-                                .id(category.getValidity().getId())
-                                .value(category.getValidity().getValue())
-                                .unit(category.getValidity().getUnit())
                                 .build()
                         : null)
                 .aggregatedAmount(AmountResponseDto.builder()
@@ -126,7 +128,6 @@ public class CategoryService {
                         .value(category.getAggregatedArea().getValue())
                         .unit(category.getAggregatedArea().getUnit())
                         .build())
-                .workflow(getWorkflow(category))
                 .build()
         ).toList();
 
@@ -141,22 +142,6 @@ public class CategoryService {
                                 .totalElements(result.getTotalElements())
                                 .build())
                 .build();
-    }
-
-    LinkedHashSet<WorkflowItemResponseDto> getWorkflow(Category category) {
-        LinkedHashSet<WorkflowItemResponseDto> workflowInResponse = new LinkedHashSet<>();
-        List<WorkflowItem> workflowInDb = new ArrayList<>(category.getWorkflow());
-        workflowInDb.sort(Comparator.comparing(WorkflowItem::getItemNumber));
-        for (WorkflowItem item : workflowInDb) {
-            Team team = item.getTeam();
-            workflowInResponse.add(WorkflowItemResponseDto.builder()
-                    .teamId(team.getId())
-                    .name(team.getDescription().name())
-                    .description(team.getDescription().description())
-                    .order(item.getItemNumber())
-                    .build());
-        }
-        return workflowInResponse;
     }
 
     @Transactional(rollbackFor = {Exception.class, RuntimeException.class})
@@ -175,48 +160,17 @@ public class CategoryService {
             category.setIcon(image);
         }
 
-        TimePeriodRequestDto validityRequest = request.validity();
-        if (Objects.nonNull(validityRequest)) {
-            TimePeriod validity = new TimePeriod();
-            validity.setUnit(validityRequest.unit());
-            validity.setValue(validityRequest.value());
-            category.setValidity(validity);
-        }
-
-        Amount aggregatedAmount = mapAmount(0.0);
+        Amount aggregatedAmount = commonMapper.mapAmount(0.0);
         amountRepository.save(aggregatedAmount);
         category.setAggregatedAmount(aggregatedAmount);
 
-        Quantity aggregatedQty = mapQuantity(0);
+        Quantity aggregatedQty = commonMapper.mapQuantity(0);
         quantityRepository.save(aggregatedQty);
         category.setAggregatedQuantity(aggregatedQty);
 
-        Area aggregatedArea = mapArea(0.0);
+        Area aggregatedArea = commonMapper.mapArea(0.0);
         areaRepository.save(aggregatedArea);
         category.setAggregatedArea(aggregatedArea);
-
-        Set<WorkflowItem> workflow = new LinkedHashSet<>();
-
-        for (WorkflowItemRequestDto workflowItem : request.workflow()) {
-            Team team = teamRepository.findById(workflowItem.id())
-                    .orElseThrow(() -> {
-                        categoryRepository.delete(category);
-                        return new RuntimeException(TEAM_NOT_FOUND);
-                    });
-            Optional<WorkflowItem> workflowItemInDb = workflowItemRepository
-                    .findByCategoryAndTaskAndTeam(null, null, team);
-            WorkflowItem item;
-            if (workflowItemInDb.isEmpty()) {
-                item = new WorkflowItem();
-                item.setTeam(team);
-                item.setItemNumber(workflowItem.order());
-                workflowItemRepository.save(item);
-            } else {
-                item = workflowItemInDb.get();
-            }
-            workflow.add(item);
-        }
-        category.setWorkflow(workflow);
         categoryRepository.save(category);
     }
 
@@ -239,13 +193,15 @@ public class CategoryService {
         categoryRepository.save(category);
     }
 
-    public PageResponseDto<StateResponseDto> getStatesByCategory(Long categoryId, Integer pageNumber, Integer pageSize) {
+    public PageResponseDto<StateResponseDto> getStatesByCategory(Long categoryId,
+             Integer pageNumber, Integer pageSize, String sortOrder, String sortBy) {
         Category category = categoryRepository.findById(categoryId).orElseThrow(
                 () -> new RuntimeException(CATEGORY_NOT_FOUND));
         Pageable page = PageRequest.of(
                 Optional.ofNullable(pageNumber).orElse(0),
                 Optional.ofNullable(pageSize).orElse(defaultPageSize),
-                Sort.by(defaultSortBy).descending());
+                Sort.by(Sort.Direction.valueOf(Optional.ofNullable(sortOrder).orElse(defaultSortOrder)),
+                        Optional.ofNullable(sortBy).orElse(defaultSortBy)));
         Page<State> result = stateRepository.findAllByCategory(category, page);
         List<StateResponseDto> response = result.stream().map(
                 state -> StateResponseDto.builder()
@@ -284,7 +240,7 @@ public class CategoryService {
         Category category = categoryRepository.findById(categoryId)
                 .orElseThrow(() -> new RuntimeException(CATEGORY_NOT_FOUND));
 
-        StateConfig stateConfig = stateConfigRepository.findById(request.stateId())
+        StateConfig stateConfig = stateConfigRepository.findById(request.stateConfigId())
                 .orElseThrow(() -> new RuntimeException(STATE_NOT_FOUND));
 
         if (stateRepository.findByStateConfigAndCategory(stateConfig, category).isPresent()) {
@@ -295,22 +251,23 @@ public class CategoryService {
         state.setStateConfig(stateConfig);
         state.setCategory(category);
 
-        Amount aggregatedAmount = mapAmount(0.0);
+        Amount aggregatedAmount = commonMapper.mapAmount(0.0);
         amountRepository.save(aggregatedAmount);
         state.setAggregatedAmount(aggregatedAmount);
 
-        Quantity aggregatedQty = mapQuantity(0);
+        Quantity aggregatedQty = commonMapper.mapQuantity(0);
         quantityRepository.save(aggregatedQty);
         state.setAggregatedQuantity(aggregatedQty);
 
-        Area aggregatedArea = mapArea(0.0);
+        Area aggregatedArea = commonMapper.mapArea(0.0);
         areaRepository.save(aggregatedArea);
         state.setAggregatedArea(aggregatedArea);
 
         stateRepository.save(state);
     }
 
-    public PageResponseDto<DistrictResponseDto> getAllDistrictsByState(Long categoryId, Long stateId, Integer pageNumber, Integer pageSize) {
+    public PageResponseDto<DistrictResponseDto> getAllDistrictsByState(Long categoryId, Long stateId,
+           Integer pageNumber, Integer pageSize, String sortOrder, String sortBy) {
         Category category = categoryRepository.findById(categoryId)
                 .orElseThrow(() -> new RuntimeException(CATEGORY_NOT_FOUND));
         State state = stateRepository.findByIdAndCategory(stateId, category)
@@ -318,7 +275,8 @@ public class CategoryService {
         Pageable page = PageRequest.of(
                 Optional.ofNullable(pageNumber).orElse(0),
                 Optional.ofNullable(pageSize).orElse(defaultPageSize),
-                Sort.by(defaultSortBy).descending());
+                Sort.by(Sort.Direction.valueOf(Optional.ofNullable(sortOrder).orElse(defaultSortOrder)),
+                        Optional.ofNullable(sortBy).orElse(defaultSortBy)));
         Page<District> result = districtRepository.findAllByState(state, page);
         List<DistrictResponseDto> response = result.stream().map(
                 district -> DistrictResponseDto.builder()
@@ -373,15 +331,15 @@ public class CategoryService {
         district.setState(state);
         district.setDistrictConfig(districtConfig);
 
-        Amount aggregatedAmount = mapAmount(0.0);
+        Amount aggregatedAmount = commonMapper.mapAmount(0.0);
         amountRepository.save(aggregatedAmount);
         district.setAggregatedAmount(aggregatedAmount);
 
-        Quantity aggregatedQty = mapQuantity(0);
+        Quantity aggregatedQty = commonMapper.mapQuantity(0);
         quantityRepository.save(aggregatedQty);
         district.setAggregatedQuantity(aggregatedQty);
 
-        Area aggregatedArea = mapArea(0.0);
+        Area aggregatedArea = commonMapper.mapArea(0.0);
         areaRepository.save(aggregatedArea);
         district.setAggregatedArea(aggregatedArea);
 

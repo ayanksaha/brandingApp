@@ -7,6 +7,8 @@ import com.fasterxml.jackson.databind.annotation.JsonDeserialize;
 import com.fasterxml.jackson.databind.annotation.JsonSerialize;
 import com.fasterxml.jackson.datatype.jsr310.deser.LocalDateTimeDeserializer;
 import com.fasterxml.jackson.datatype.jsr310.ser.LocalDateTimeSerializer;
+import com.lb.brandingApp.auth.data.models.response.TeamResponseDto;
+import com.lb.brandingApp.common.data.enums.Status;
 import com.lb.brandingApp.common.data.models.response.*;
 import com.lb.brandingApp.common.data.enums.ApprovalStatus;
 import com.lb.brandingApp.auth.data.models.response.UserResponseDto;
@@ -37,9 +39,21 @@ public class AllotmentResponseDto {
     @JsonProperty("approval_status")
     private ApprovalStatus approvalStatus;
 
+    private Status status;
+
     private List<NotesResponseDto> notes;
 
     private List<ImageResponseDto> images;
+
+    private UserResponseDto assignee;
+
+    private List<TeamResponseDto> futureTeams;
+
+    @JsonProperty("assigned_team")
+    private TeamResponseDto assignedTeam;
+
+    @JsonProperty("next_team")
+    private TeamResponseDto nextTeam;
 
     @JsonDeserialize(using = LocalDateTimeDeserializer.class)
     @JsonSerialize(using = LocalDateTimeSerializer.class)
