@@ -64,6 +64,7 @@ public class TaskResponseDto {
 
     private AmountResponseDto amount;
 
+    @JsonProperty("approval_status")
     private ApprovalStatus approvalStatus;
 
     private AmountResponseDto rent;
@@ -75,7 +76,6 @@ public class TaskResponseDto {
 
     private Status status;
 
-    @JsonProperty("images")
     private List<ImageResponseDto> images;
 
     @JsonDeserialize(using = LocalDateTimeDeserializer.class)

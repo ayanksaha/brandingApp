@@ -91,6 +91,7 @@ public class TaskMapper {
                                                         .name(allotment.getCurrentAssignee().getAssignedTo().getName())
                                                         .email(allotment.getCurrentAssignee().getAssignedTo().getEmail())
                                                         .phoneNumber(allotment.getCurrentAssignee().getAssignedTo().getPhoneNumber())
+                                                        .team(allotment.getCurrentAssignee().getAssignedTo().getTeam().getDescription().description())
                                                         .build())
                                         .status(mapTaskStatus(task))
                                         .nextTeam(mapTeamResponse(allotment.getFutureAssignees().stream()
@@ -112,6 +113,7 @@ public class TaskMapper {
                                                 .name(allotment.getCreatedBy().getName())
                                                 .email(allotment.getCreatedBy().getEmail())
                                                 .phoneNumber(allotment.getCreatedBy().getPhoneNumber())
+                                                .team(allotment.getCreatedBy().getTeam().getDescription().description())
                                                 .build())
                                         .lastModifiedAt(allotment.getLastModifiedAt())
                                         .lastModifiedBy(UserResponseDto.builder()
@@ -119,6 +121,7 @@ public class TaskMapper {
                                                 .name(allotment.getModifiedBy().getName())
                                                 .email(allotment.getModifiedBy().getEmail())
                                                 .phoneNumber(allotment.getModifiedBy().getPhoneNumber())
+                                                .team(allotment.getModifiedBy().getTeam().getDescription().description())
                                                 .build())
                                         .images(allotment.getReferenceImages().stream().map(
                                                 imageData -> ImageResponseDto.builder()
@@ -159,6 +162,7 @@ public class TaskMapper {
                                 .name(createdBy.getName())
                                 .email(createdBy.getEmail())
                                 .phoneNumber(createdBy.getPhoneNumber())
+                                .team(createdBy.getTeam().getDescription().description())
                                 .build())
                 .lastModifiedAt(task.getLastModifiedAt())
                 .lastModifiedBy(
@@ -167,6 +171,7 @@ public class TaskMapper {
                                 .name(lastModifiedBy.getName())
                                 .email(lastModifiedBy.getEmail())
                                 .phoneNumber(lastModifiedBy.getPhoneNumber())
+                                .team(lastModifiedBy.getTeam().getDescription().description())
                                 .build())
                 .build();
     }
