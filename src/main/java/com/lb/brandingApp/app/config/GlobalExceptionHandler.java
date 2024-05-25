@@ -11,6 +11,7 @@ public class GlobalExceptionHandler {
 
     @ExceptionHandler(RuntimeException.class)
     public ResponseEntity<String> handleException(RuntimeException e) {
+        e.printStackTrace();
         if(e.getMessage().contains(NOT_FOUND)) {
             return new ResponseEntity<>(e.getMessage(), HttpStatus.NOT_FOUND);
         } else {

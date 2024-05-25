@@ -23,10 +23,7 @@ import org.springframework.stereotype.Component;
 
 import java.time.LocalDateTime;
 import java.time.temporal.ChronoUnit;
-import java.util.Comparator;
-import java.util.List;
-import java.util.Objects;
-import java.util.Set;
+import java.util.*;
 
 import static com.lb.brandingApp.app.utils.CompressionUtil.unzip;
 
@@ -146,7 +143,8 @@ public class TaskMapper {
                         .build())
                 .approvalStatus(task.getApprovalStatus())
                 .rent(mapRent(task.getRent()))
-                .expiry(allotments.stream().min(Comparator.comparing(Allotment::getExpiry))
+                .expiry(allotments.stream().filter(allotment -> Objects.nonNull(allotment.getExpiry()))
+                        .min(Comparator.comparing(Allotment::getExpiry))
                         .map(Allotment::getExpiry).orElse(null))
                 .status(mapTaskStatus(task))
                 .images(task.getFinalImages().stream()
@@ -177,7 +175,7 @@ public class TaskMapper {
     }
 
     private AmountResponseDto mapRent(Amount rent) {
-        if(Objects.nonNull(rent)) {
+        if (Objects.nonNull(rent)) {
             AmountResponseDto.builder()
                     .value(rent.getValue())
                     .currency(rent.getCurrency())
@@ -215,7 +213,7 @@ public class TaskMapper {
                                 .build()
                         ).toList())
                 .status(mapTaskStatus(task))
-                .expiry(allotments.stream().min(Comparator.comparing(Allotment::getExpiry))
+                .expiry(allotments.stream().filter(allotment -> Objects.nonNull(allotment.getExpiry())).min(Comparator.comparing(Allotment::getExpiry))
                         .map(Allotment::getExpiry).orElse(null))
                 .verifiedAt(verifiedAt)
                 .createdAt(task.getCreatedAt())

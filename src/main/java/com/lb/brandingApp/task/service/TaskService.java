@@ -211,6 +211,22 @@ public class TaskService {
 
     public TaskResponseDto getTaskById(Long taskId) {
         Task task = taskRepository.findById(taskId).orElseThrow(() -> new RuntimeException(TASK_NOT_FOUND));
+        UserExtension user = (UserExtension) SecurityContextHolder.getContext().getAuthentication().getPrincipal();
+        List<String> authorities = user.getAuthorities().stream().map(
+                GrantedAuthority::getAuthority).toList();
+        if (authorities.isEmpty()) {
+            throw new RuntimeException(TEAM_NOT_FOUND);
+        }
+
+        TeamDescription description = AppUtil.getTeamDescriptionByDescription(authorities.get(0));
+        Team currentUserTeam = teamRepository.findByDescription(description)
+                .orElseThrow(() -> new RuntimeException(TEAM_NOT_FOUND));
+        if (currentUserTeam.getPermissions().stream().noneMatch(
+                permission -> permission.getPermissionName().equals("all_team_tasks"))) {
+            task.setAllotments(task.getAllotments().stream().filter(allotment -> allotment.getCurrentAssignee()
+               .getAssignedToTeam().getDescription() == currentUserTeam.getDescription()).collect(Collectors.toSet()));
+        }
+
         return taskMapper.mapTaskDetailResponse(task);
     }
 
@@ -396,7 +412,7 @@ public class TaskService {
         task.setApprovalStatus(ApprovalStatus.PENDING_APPROVAL);
 
         AmountRequestDto requestedRent = request.rent();
-        if(Objects.nonNull(requestedRent)) {
+        if (Objects.nonNull(requestedRent)) {
             Amount rent = commonMapper.mapAmount(requestedRent.value());
             amountRepository.save(rent);
             task.setRent(rent);
