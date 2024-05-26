@@ -317,14 +317,14 @@ public class TaskService {
             assigneeRepository.saveAll(futureAssignees);
             allotment.setFutureAssignees(futureAssignees);
 
-            double calculateArea = calculateArea(dimension);
-            aggregatedArea.updateAndGet(v -> (v + calculateArea));
-            Area area = commonMapper.mapArea(calculateArea);
+            double calculatedArea = calculateArea(dimension, qtyValue);
+            aggregatedArea.updateAndGet(v -> (v + calculatedArea));
+            Area area = commonMapper.mapArea(calculatedArea);
             areaRepository.save(area);
             allotment.setArea(area);
 
             Amount unitAmt = productConfig.getAmount();
-            double totalAllotmentAmt = (calculateArea > 0) ? (unitAmt.getValue() * calculateArea)
+            double totalAllotmentAmt = (calculatedArea > 0) ? (unitAmt.getValue() * calculatedArea)
                     : (unitAmt.getValue() * qtyValue);
             aggregatedAmt.updateAndGet(v -> (v + totalAllotmentAmt));
             Amount amount = commonMapper.mapAmount(totalAllotmentAmt);
@@ -372,7 +372,7 @@ public class TaskService {
         district.setAggregatedAmount(districtAggregatedAmt);
 
         Quantity districtAggregatedQty = district.getAggregatedQuantity();
-        districtAggregatedQty.setValue(districtAggregatedQty.getValue() + aggregatedQty.get());
+        districtAggregatedQty.setValue(districtAggregatedQty.getValue() + 1);
         quantityRepository.save(districtAggregatedQty);
         district.setAggregatedQuantity(districtAggregatedQty);
         districtRepository.save(district);
@@ -388,7 +388,7 @@ public class TaskService {
         state.setAggregatedAmount(stateAggregatedAmt);
 
         Quantity stateAggregatedQty = state.getAggregatedQuantity();
-        stateAggregatedQty.setValue(stateAggregatedQty.getValue() + aggregatedQty.get());
+        stateAggregatedQty.setValue(stateAggregatedQty.getValue() + 1);
         quantityRepository.save(stateAggregatedQty);
         state.setAggregatedQuantity(stateAggregatedQty);
         stateRepository.save(state);
@@ -404,7 +404,7 @@ public class TaskService {
         category.setAggregatedAmount(categoryAggregatedAmt);
 
         Quantity categoryAggregatedQty = category.getAggregatedQuantity();
-        categoryAggregatedQty.setValue(categoryAggregatedQty.getValue() + aggregatedQty.get());
+        categoryAggregatedQty.setValue(categoryAggregatedQty.getValue() + 1);
         quantityRepository.save(categoryAggregatedQty);
         category.setAggregatedQuantity(categoryAggregatedQty);
         categoryRepository.save(category);
