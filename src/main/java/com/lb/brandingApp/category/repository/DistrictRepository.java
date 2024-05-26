@@ -1,5 +1,6 @@
 package com.lb.brandingApp.category.repository;
 
+import com.lb.brandingApp.category.data.entities.Category;
 import com.lb.brandingApp.category.data.entities.District;
 import com.lb.brandingApp.category.data.entities.State;
 import com.lb.brandingApp.location.data.entities.DistrictConfig;
@@ -15,4 +16,6 @@ public interface DistrictRepository extends JpaRepository<District, Long> {
     Optional<District> findByDistrictConfigAndState(DistrictConfig districtConfig, State state);
 
     Page<District> findAllByState(State state, Pageable page);
+
+    Optional<District> findByIdAndState(Long districtId, State state);
 }

@@ -144,6 +144,34 @@ public class CategoryService {
                 .build();
     }
 
+    public CategoryResponseDto getCategory(Long categoryId) {
+        Category category = categoryRepository.findById(categoryId).orElseThrow(
+                () -> new RuntimeException(CATEGORY_NOT_FOUND));
+
+        return CategoryResponseDto.builder()
+                .id(category.getId())
+                .name(category.getName())
+                .icon(Objects.nonNull(category.getIcon()) ?
+                        ImageResponseDto.builder()
+                                .image(unzip(category.getIcon().getImageData()))
+                                .name(category.getIcon().getName())
+                                .build()
+                        : null)
+                .aggregatedAmount(AmountResponseDto.builder()
+                        .value(category.getAggregatedAmount().getValue())
+                        .currency(category.getAggregatedAmount().getCurrency())
+                        .build())
+                .aggregatedQuantity(QuantityResponseDto.builder()
+                        .value(category.getAggregatedQuantity().getValue())
+                        .unit(category.getAggregatedQuantity().getUom())
+                        .build())
+                .aggregatedArea(AreaResponseDto.builder()
+                        .value(category.getAggregatedArea().getValue())
+                        .unit(category.getAggregatedArea().getUnit())
+                        .build())
+                .build();
+    }
+
     @Transactional(rollbackFor = {Exception.class, RuntimeException.class})
     public void addNewCategory(CategoryRequestDto request) {
 
@@ -235,6 +263,32 @@ public class CategoryService {
                 .build();
     }
 
+    public StateResponseDto getState(Long categoryId, Long stateId) {
+        Category category = categoryRepository.findById(categoryId).orElseThrow(
+                () -> new RuntimeException(CATEGORY_NOT_FOUND));
+        State state = stateRepository.findByIdAndCategory(stateId, category).orElseThrow(
+                () -> new RuntimeException(STATE_NOT_FOUND));
+
+        return StateResponseDto.builder()
+                .stateId(state.getId())
+                .stateConfigId(state.getStateConfig().getId())
+                .name(state.getStateConfig().getName())
+                .categoryId(state.getCategory().getId())
+                .aggregatedAmount(AmountResponseDto.builder()
+                        .value(state.getAggregatedAmount().getValue())
+                        .currency(state.getAggregatedAmount().getCurrency())
+                        .build())
+                .aggregatedQuantity(QuantityResponseDto.builder()
+                        .value(state.getAggregatedQuantity().getValue())
+                        .unit(state.getAggregatedQuantity().getUom())
+                        .build())
+                .aggregatedArea(AreaResponseDto.builder()
+                        .value(state.getAggregatedArea().getValue())
+                        .unit(state.getAggregatedArea().getUnit())
+                        .build())
+                .build();
+    }
+
     @Transactional(rollbackFor = {RuntimeException.class, Exception.class})
     public void addStateToCategory(StateRequestDto request, Long categoryId) {
         Category category = categoryRepository.findById(categoryId)
@@ -308,6 +362,35 @@ public class CategoryService {
                                 .totalPages(result.getTotalPages())
                                 .totalElements(result.getTotalElements())
                                 .build())
+                .build();
+    }
+
+    public DistrictResponseDto getDistrict(Long categoryId, Long stateId, Long districtId) {
+        Category category = categoryRepository.findById(categoryId).orElseThrow(
+                () -> new RuntimeException(CATEGORY_NOT_FOUND));
+        State state = stateRepository.findByIdAndCategory(stateId, category).orElseThrow(
+                () -> new RuntimeException(STATE_NOT_FOUND));
+        District district = districtRepository.findByIdAndState(districtId, state)
+                .orElseThrow(() -> new RuntimeException(DISTRICT_NOT_FOUND));
+
+        return DistrictResponseDto.builder()
+                .districtId(district.getId())
+                .districtConfigId(district.getDistrictConfig().getId())
+                .name(district.getDistrictConfig().getName())
+                .stateId(district.getState().getId())
+                .categoryId(district.getState().getCategory().getId())
+                .aggregatedAmount(AmountResponseDto.builder()
+                        .value(district.getAggregatedAmount().getValue())
+                        .currency(district.getAggregatedAmount().getCurrency())
+                        .build())
+                .aggregatedQuantity(QuantityResponseDto.builder()
+                        .value(district.getAggregatedQuantity().getValue())
+                        .unit(district.getAggregatedQuantity().getUom())
+                        .build())
+                .aggregatedArea(AreaResponseDto.builder()
+                        .value(district.getAggregatedArea().getValue())
+                        .unit(district.getAggregatedArea().getUnit())
+                        .build())
                 .build();
     }
 

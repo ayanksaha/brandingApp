@@ -4,11 +4,13 @@ import com.lb.brandingApp.auth.data.entities.Team;
 import com.lb.brandingApp.auth.data.entities.User;
 import com.lb.brandingApp.auth.data.models.response.TeamResponseDto;
 import com.lb.brandingApp.auth.data.models.response.UserResponseDto;
+import com.lb.brandingApp.category.data.entities.Category;
+import com.lb.brandingApp.category.data.entities.District;
+import com.lb.brandingApp.category.data.entities.State;
 import com.lb.brandingApp.category.data.models.response.CategoryResponseDto;
 import com.lb.brandingApp.category.data.models.response.DistrictResponseDto;
 import com.lb.brandingApp.category.data.models.response.StateResponseDto;
 import com.lb.brandingApp.common.data.entities.Amount;
-import com.lb.brandingApp.common.data.enums.ImageReference;
 import com.lb.brandingApp.common.data.enums.Status;
 import com.lb.brandingApp.common.data.enums.TeamDescription;
 import com.lb.brandingApp.common.data.models.response.*;
@@ -201,10 +203,25 @@ public class TaskMapper {
                         allotment -> allotment.getEarlierAssignees().stream())
                 .filter(assignee -> assignee.getAssignedToTeam().getDescription() == TeamDescription.VERIFICATION)
                 .min(Comparator.comparing(Assignee::getEndDate)).map(Assignee::getEndDate).orElse(null);
+        District district = task.getDistrict();
+        State state = district.getState();
+        Category category = state.getCategory();
 
         return TaskResponseDto.builder()
                 .id(task.getId())
                 .name(task.getName())
+                .category(CategoryResponseDto.builder()
+                        .id(category.getId())
+                        .name(category.getName())
+                        .build())
+                .state(StateResponseDto.builder()
+                        .stateId(state.getId())
+                        .name(state.getStateConfig().getName())
+                        .build())
+                .district(DistrictResponseDto.builder()
+                        .districtId(district.getId())
+                        .name(district.getDistrictConfig().getName())
+                        .build())
                 .endDate(task.getEndDate())
                 .images(task.getFinalImages().stream()
                         .map(imageData -> ImageResponseDto.builder()
