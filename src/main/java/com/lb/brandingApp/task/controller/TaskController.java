@@ -64,8 +64,20 @@ public class TaskController {
     }
 
     @PutMapping("/app/task/{task_id}/approve")
-    public ResponseEntity<Void> approveTaskAndAssignToNextTeam(@PathVariable("task_id") Long taskId, @RequestBody TaskRequestDto request) {
-        taskService.approveAndAssignNext(taskId, request);
+    public ResponseEntity<Void> approveTask(@PathVariable("task_id") Long taskId) {
+        taskService.approve(taskId);
+        return ResponseEntity.ok().build();
+    }
+
+    @PutMapping("/app/task/{task_id}/next")
+    public ResponseEntity<Void> assignToNextTeam(@PathVariable("task_id") Long taskId) {
+        taskService.assignToNextTeam(taskId);
+        return ResponseEntity.ok().build();
+    }
+
+    @PostMapping("/app/task/{task_id}/images")
+    public ResponseEntity<Void> addImages(@PathVariable("task_id") Long taskId, @RequestBody TaskRequestDto request) {
+        taskService.addImages(taskId, request);
         return ResponseEntity.ok().build();
     }
 }

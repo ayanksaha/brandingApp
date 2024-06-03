@@ -13,6 +13,7 @@ public interface ApplicationConstants {
     String PRODUCT_NOT_FOUND = "Product Not Found!";
     String STATE_NOT_FOUND = "State Not Found!";
     String TASK_NOT_FOUND = "Task Not Found!";
+    String ALLOTMENT_NOT_FOUND = "Allotment Not Found!";
     String TEAM_NOT_FOUND = "Team Not Found!";
     String TEAM_DESCRIPTION_NOT_FOUND = "Team Description Not Found!";
     String USER_NOT_FOUND = "User Not Found!";

@@ -262,7 +262,8 @@ public class TaskMapper {
                         && currentAssignees.stream().anyMatch(assignee -> (assignee.getStatus() != Status.DONE))) {
                     return Status.PENDING;
                 }
-                if (currentAssignees.stream().allMatch(assignee -> (assignee.getStatus() == Status.DONE))) {
+                if (task.getAllotments().stream().allMatch(allotment -> allotment.getFutureAssignees().isEmpty()
+                        && Objects.isNull(allotment.getCurrentAssignee()))) {
                     return Status.DONE;
                 }
                 return Status.IN_PROGRESS;
@@ -270,8 +271,8 @@ public class TaskMapper {
             case REJECTED:
                 return Status.REJECTED;
             default: {
-                List<Assignee> currentAssignees = task.getAllotments().stream().map(Allotment::getCurrentAssignee).toList();
-                if (currentAssignees.stream().allMatch(assignee -> (assignee.getStatus() == Status.DONE))) {
+                if (task.getAllotments().stream().allMatch(allotment -> allotment.getFutureAssignees().isEmpty()
+                        && Objects.isNull(allotment.getCurrentAssignee()))) {
                     return Status.DONE;
                 }
                 return Status.IN_PROGRESS;

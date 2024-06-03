@@ -19,6 +19,7 @@ import com.lb.brandingApp.common.data.enums.ImageReference;
 import com.lb.brandingApp.common.data.enums.Status;
 import com.lb.brandingApp.common.data.enums.TeamDescription;
 import com.lb.brandingApp.common.data.models.request.AmountRequestDto;
+import com.lb.brandingApp.common.data.models.request.ImageRequestDto;
 import com.lb.brandingApp.common.mapper.CommonMapper;
 import com.lb.brandingApp.common.repository.*;
 import com.lb.brandingApp.product.data.entities.ProductConfig;
@@ -26,6 +27,7 @@ import com.lb.brandingApp.product.repository.ProductConfigRepository;
 import com.lb.brandingApp.task.data.entities.Allotment;
 import com.lb.brandingApp.task.data.entities.Assignee;
 import com.lb.brandingApp.task.data.entities.Task;
+import com.lb.brandingApp.task.data.models.request.AllotmentRequestDto;
 import com.lb.brandingApp.task.data.models.request.TaskRequestDto;
 import com.lb.brandingApp.task.data.models.response.TaskResponseDto;
 import com.lb.brandingApp.task.mspper.TaskMapper;
@@ -256,82 +258,8 @@ public class TaskService {
         Set<Allotment> allotments = request.allotments().stream().map(allotmentRequestDto -> {
 
             Allotment allotment = new Allotment();
-            Set<ImageData> referenceImages = new HashSet<>();
-            allotmentRequestDto.referenceImages().forEach(
-                    imageRequestDto -> {
-                        ImageData image = new ImageData();
-                        image.setImageData(zip(imageRequestDto.data()));
-                        image.setName(imageRequestDto.name());
-                        image.setReference(ImageReference.INITIAL);
-                        referenceImages.add(image);
-                    }
-            );
-            imageRepository.saveAll(referenceImages);
-            allotment.setReferenceImages(referenceImages);
-
-            Dimension dimension = commonMapper.mapDimension(
-                    allotmentRequestDto.dimension().length(), allotmentRequestDto.dimension().width());
-            dimensionRepository.save(dimension);
-            allotment.setDimension(dimension);
-
-            Note note = new Note();
-            note.setText(allotmentRequestDto.noteText());
-            allotment.setNotes(Set.of(note));
-
-            int qtyValue = allotmentRequestDto.quantity().value();
-            aggregatedQty.updateAndGet(v -> (v + qtyValue));
-            Quantity qty = commonMapper.mapQuantity(qtyValue);
-            quantityRepository.save(qty);
-            allotment.setQuantity(qty);
-
-            ProductConfig productConfig = productConfigRepository.findById(allotmentRequestDto.product().productId())
-                    .orElseThrow(() -> new RuntimeException(PRODUCT_NOT_FOUND));
-            allotment.setProductConfig(productConfig);
-
-            Set<WorkflowItem> productWorkflow = productConfig.getWorkflow().stream()
-                    .sorted(Comparator.comparingInt(WorkflowItem::getSequence))
-                    .collect(Collectors.toCollection(LinkedHashSet::new));
-            Set<Assignee> futureAssignees = new LinkedHashSet<>();
-
-            for (WorkflowItem item : productWorkflow) {
-                Assignee futureAssignee = new Assignee();
-                futureAssignee.setSequence(item.getSequence());
-                futureAssignee.setAssignedToTeam(item.getTeam());
-                futureAssignee.setStatus(Status.PENDING);
-                futureAssignees.add(futureAssignee);
-            }
-
-            Assignee currentAssignee = futureAssignees.stream().min(Comparator.comparingInt(Assignee::getSequence))
-                    .orElseThrow(() -> new RuntimeException(ASSIGNEE_CANT_BE_NULL));
-            if (currentAssignee.getAssignedToTeam().getDescription() == TeamDescription.APPROVAL) {
-                isTaskPendingApproval.set(true);
-                currentAssignee.setStatus(Status.PENDING_APPROVAL);
-                allotment.setApprovalStatus(ApprovalStatus.PENDING_APPROVAL);
-            } else {
-                allotment.setApprovalStatus(ApprovalStatus.NOT_REQUIRED);
-            }
-            assigneeRepository.save(currentAssignee);
-            allotment.setCurrentAssignee(currentAssignee);
-
-            futureAssignees.remove(currentAssignee);
-            assigneeRepository.saveAll(futureAssignees);
-            allotment.setFutureAssignees(futureAssignees);
-
-            double calculatedArea = calculateArea(dimension, qtyValue);
-            aggregatedArea.updateAndGet(v -> (v + calculatedArea));
-            Area area = commonMapper.mapArea(calculatedArea);
-            areaRepository.save(area);
-            allotment.setArea(area);
-
-            Amount unitAmt = productConfig.getAmount();
-            double totalAllotmentAmt = (calculatedArea > 0) ? (unitAmt.getValue() * calculatedArea)
-                    : (unitAmt.getValue() * qtyValue);
-            aggregatedAmt.updateAndGet(v -> (v + totalAllotmentAmt));
-            Amount amount = commonMapper.mapAmount(totalAllotmentAmt);
-            amountRepository.save(amount);
-            allotment.setAmount(amount);
-
-            allotment.setApprovalStatus(ApprovalStatus.PENDING_APPROVAL);
+            updateAllotment(allotment, allotmentRequestDto, aggregatedArea, aggregatedQty,
+                    aggregatedAmt, isTaskPendingApproval);
             allotment.setCreatedBy(user);
             allotment.setModifiedBy(user);
             allotment.setCreatedAt(LocalDateTime.now());
@@ -409,8 +337,6 @@ public class TaskService {
         category.setAggregatedQuantity(categoryAggregatedQty);
         categoryRepository.save(category);
 
-        task.setApprovalStatus(ApprovalStatus.PENDING_APPROVAL);
-
         AmountRequestDto requestedRent = request.rent();
         if (Objects.nonNull(requestedRent)) {
             Amount rent = commonMapper.mapAmount(requestedRent.value());
@@ -428,11 +354,341 @@ public class TaskService {
 
     @Transactional(rollbackFor = {Exception.class, RuntimeException.class})
     public void updateTask(Long taskId, TaskRequestDto request) {
+        UserExtension userExtension = (UserExtension) SecurityContextHolder.getContext()
+                .getAuthentication().getPrincipal();
+        User user = userRepository.findByUsername(userExtension.getUsername())
+                .orElseThrow(() -> new RuntimeException(USER_NOT_FOUND));
+        Task task = taskRepository.findById(taskId).orElseThrow(() -> new RuntimeException(TASK_NOT_FOUND));
+        task.setName(request.name());
+        task.setLocation(request.location());
+        task.setMobileNumber(request.mobileNumber());
 
+        District district = task.getDistrict();
+        State state = district.getState();
+        Category category = state.getCategory();
+
+        AtomicReference<Double> aggregatedArea = new AtomicReference<>(0.0);
+        AtomicReference<Integer> aggregatedQty = new AtomicReference<>(0);
+        AtomicReference<Double> aggregatedAmt = new AtomicReference<>(0.0);
+        AtomicBoolean isTaskPendingApproval = new AtomicBoolean(false);
+
+        Set<Allotment> allotments = request.allotments().stream().map(allotmentRequestDto -> {
+            Allotment allotment = allotmentRepository.findById(allotmentRequestDto.id()).orElse(new Allotment());
+            updateAllotment(allotment, allotmentRequestDto, aggregatedArea, aggregatedQty,
+                    aggregatedAmt, isTaskPendingApproval);
+
+            if(allotment.getId() == null) {
+                allotment.setCreatedBy(user);
+                allotment.setCreatedAt(LocalDateTime.now());
+            }
+
+            allotment.setModifiedBy(user);
+            allotment.setLastModifiedAt(LocalDateTime.now());
+            return allotment;
+        }).collect(Collectors.toSet());
+
+        if (isTaskPendingApproval.get()) {
+            task.setApprovalStatus(ApprovalStatus.PENDING_APPROVAL);
+        } else {
+            task.setApprovalStatus(ApprovalStatus.NOT_REQUIRED);
+        }
+
+        allotmentRepository.saveAll(allotments);
+        task.setAllotments(allotments);
+
+        Area taskAggregatedArea = task.getAggregatedArea();
+        taskAggregatedArea.setValue(aggregatedArea.get());
+        areaRepository.save(taskAggregatedArea);
+        task.setAggregatedArea(taskAggregatedArea);
+
+        Amount taskAggregatedAmt = task.getAggregatedAmount();
+        taskAggregatedAmt.setValue(aggregatedAmt.get());
+        amountRepository.save(taskAggregatedAmt);
+        task.setAggregatedAmount(taskAggregatedAmt);
+
+        Quantity taskAggregatedQty = task.getAggregatedQuantity();
+        taskAggregatedQty.setValue(aggregatedQty.get());
+        quantityRepository.save(taskAggregatedQty);
+        task.setAggregatedQuantity(taskAggregatedQty);
+
+        Area districtAggregatedArea = district.getAggregatedArea();
+        districtAggregatedArea.setValue(districtAggregatedArea.getValue() + aggregatedArea.get());
+        areaRepository.save(districtAggregatedArea);
+        district.setAggregatedArea(districtAggregatedArea);
+
+        Amount districtAggregatedAmt = district.getAggregatedAmount();
+        districtAggregatedAmt.setValue(districtAggregatedAmt.getValue() + aggregatedAmt.get());
+        amountRepository.save(districtAggregatedAmt);
+        district.setAggregatedAmount(districtAggregatedAmt);
+
+        Quantity districtAggregatedQty = district.getAggregatedQuantity();
+        districtAggregatedQty.setValue(districtAggregatedQty.getValue() + 1);
+        quantityRepository.save(districtAggregatedQty);
+        district.setAggregatedQuantity(districtAggregatedQty);
+        districtRepository.save(district);
+
+        Area stateAggregatedArea = state.getAggregatedArea();
+        stateAggregatedArea.setValue(stateAggregatedArea.getValue() + aggregatedArea.get());
+        areaRepository.save(stateAggregatedArea);
+        state.setAggregatedArea(stateAggregatedArea);
+
+        Amount stateAggregatedAmt = state.getAggregatedAmount();
+        stateAggregatedAmt.setValue(stateAggregatedAmt.getValue() + aggregatedAmt.get());
+        amountRepository.save(stateAggregatedAmt);
+        state.setAggregatedAmount(stateAggregatedAmt);
+
+        Quantity stateAggregatedQty = state.getAggregatedQuantity();
+        stateAggregatedQty.setValue(stateAggregatedQty.getValue() + 1);
+        quantityRepository.save(stateAggregatedQty);
+        state.setAggregatedQuantity(stateAggregatedQty);
+        stateRepository.save(state);
+
+        Area categoryAggregatedArea = category.getAggregatedArea();
+        categoryAggregatedArea.setValue(categoryAggregatedArea.getValue() + aggregatedArea.get());
+        areaRepository.save(categoryAggregatedArea);
+        category.setAggregatedArea(categoryAggregatedArea);
+
+        Amount categoryAggregatedAmt = category.getAggregatedAmount();
+        categoryAggregatedAmt.setValue(categoryAggregatedAmt.getValue() + aggregatedAmt.get());
+        amountRepository.save(categoryAggregatedAmt);
+        category.setAggregatedAmount(categoryAggregatedAmt);
+
+        Quantity categoryAggregatedQty = category.getAggregatedQuantity();
+        categoryAggregatedQty.setValue(categoryAggregatedQty.getValue() + 1);
+        quantityRepository.save(categoryAggregatedQty);
+        category.setAggregatedQuantity(categoryAggregatedQty);
+        categoryRepository.save(category);
+
+        AmountRequestDto requestedRent = request.rent();
+        if (Objects.nonNull(requestedRent)) {
+            Amount rent = Optional.ofNullable(task.getRent()).orElse(commonMapper.mapAmount(requestedRent.value()));
+            rent.setValue(requestedRent.value());
+            amountRepository.save(rent);
+            task.setRent(rent);
+        }
+
+        List<ImageRequestDto> images = request.referenceImages();
+
+        Set<ImageData> referenceImages = new HashSet<>();
+        if(Objects.nonNull(images)) {
+            images.forEach(
+                    imageRequestDto -> {
+                        ImageData image = new ImageData();
+                        image.setImageData(zip(imageRequestDto.data()));
+                        image.setName(imageRequestDto.name());
+                        image.setReference(ImageReference.FINAL);
+                        referenceImages.add(image);
+                    }
+            );
+            imageRepository.saveAll(referenceImages);
+        }
+
+        task.setFinalImages(referenceImages);
+
+        task.setLastModifiedBy(user);
+        task.setLastModifiedAt(LocalDateTime.now());
+        taskRepository.save(task);
+    }
+
+    private void updateAllotment(Allotment allotment, AllotmentRequestDto allotmentRequestDto,
+             AtomicReference<Double> aggregatedArea, AtomicReference<Integer> aggregatedQty,
+             AtomicReference<Double> aggregatedAmt, AtomicBoolean isTaskPendingApproval) {
+        Set<ImageData> referenceImages = new HashSet<>();
+        allotmentRequestDto.referenceImages().forEach(
+                imageRequestDto -> {
+                    ImageData image = new ImageData();
+                    image.setImageData(zip(imageRequestDto.data()));
+                    image.setName(imageRequestDto.name());
+                    image.setReference(ImageReference.INITIAL);
+                    referenceImages.add(image);
+                }
+        );
+        imageRepository.saveAll(referenceImages);
+        allotment.setReferenceImages(referenceImages);
+
+        Dimension dimension = commonMapper.mapDimension(
+                allotmentRequestDto.dimension().length(), allotmentRequestDto.dimension().width());
+        dimensionRepository.save(dimension);
+        allotment.setDimension(dimension);
+
+        Note note = new Note();
+        note.setText(allotmentRequestDto.noteText());
+        allotment.setNotes(Set.of(note));
+
+        int qtyValue = allotmentRequestDto.quantity().value();
+        aggregatedQty.updateAndGet(v -> (v + qtyValue));
+        Quantity qty = commonMapper.mapQuantity(qtyValue);
+        quantityRepository.save(qty);
+        allotment.setQuantity(qty);
+
+        ProductConfig productConfig = productConfigRepository.findById(allotmentRequestDto.product().productId())
+                .orElseThrow(() -> new RuntimeException(PRODUCT_NOT_FOUND));
+        allotment.setProductConfig(productConfig);
+
+        Set<WorkflowItem> productWorkflow = productConfig.getWorkflow().stream()
+                .sorted(Comparator.comparingInt(WorkflowItem::getSequence))
+                .collect(Collectors.toCollection(LinkedHashSet::new));
+        Set<Assignee> futureAssignees = new LinkedHashSet<>();
+
+        for (WorkflowItem item : productWorkflow) {
+            Assignee futureAssignee = new Assignee();
+            futureAssignee.setSequence(item.getSequence());
+            futureAssignee.setAssignedToTeam(item.getTeam());
+            futureAssignee.setStatus(Status.PENDING);
+            futureAssignees.add(futureAssignee);
+        }
+
+        Assignee currentAssignee = futureAssignees.stream().min(Comparator.comparingInt(Assignee::getSequence))
+                .orElseThrow(() -> new RuntimeException(ASSIGNEE_CANT_BE_NULL));
+        if (currentAssignee.getAssignedToTeam().getDescription() == TeamDescription.APPROVAL) {
+            isTaskPendingApproval.set(true);
+            currentAssignee.setStatus(Status.PENDING_APPROVAL);
+            allotment.setApprovalStatus(ApprovalStatus.PENDING_APPROVAL);
+        } else {
+            allotment.setApprovalStatus(ApprovalStatus.NOT_REQUIRED);
+        }
+        assigneeRepository.save(currentAssignee);
+        allotment.setCurrentAssignee(currentAssignee);
+
+        futureAssignees.remove(currentAssignee);
+        assigneeRepository.saveAll(futureAssignees);
+        allotment.setFutureAssignees(futureAssignees);
+
+        double calculatedArea = calculateArea(dimension, qtyValue);
+        aggregatedArea.updateAndGet(v -> (v + calculatedArea));
+        Area area = commonMapper.mapArea(calculatedArea);
+        areaRepository.save(area);
+        allotment.setArea(area);
+
+        Amount unitAmt = productConfig.getAmount();
+        double totalAllotmentAmt = (calculatedArea > 0) ? (unitAmt.getValue() * calculatedArea)
+                : (unitAmt.getValue() * qtyValue);
+        aggregatedAmt.updateAndGet(v -> (v + totalAllotmentAmt));
+        Amount amount = commonMapper.mapAmount(totalAllotmentAmt);
+        amountRepository.save(amount);
+        allotment.setAmount(amount);
     }
 
     @Transactional(rollbackFor = {Exception.class, RuntimeException.class})
-    public void approveAndAssignNext(Long taskId, TaskRequestDto request) {
+    public void approve(Long taskId) {
+        UserExtension userExtension = (UserExtension) SecurityContextHolder.getContext()
+                .getAuthentication().getPrincipal();
+        User user = userRepository.findByUsername(userExtension.getUsername())
+                .orElseThrow(() -> new RuntimeException(USER_NOT_FOUND));
+        Task task = taskRepository.findById(taskId).orElseThrow(() -> new RuntimeException(TASK_NOT_FOUND));
+        task.setApprovalStatus(ApprovalStatus.APPROVED);
+        task.setApprovedAt(LocalDateTime.now());
 
+        for(Allotment allotment: task.getAllotments()) {
+             if(allotment.getApprovalStatus() == ApprovalStatus.PENDING_APPROVAL) {
+                 allotment.setApprovalStatus(ApprovalStatus.APPROVED);
+                 assignAllotmentToNextTeam(allotment, user);
+             }
+        }
+
+        task.setLastModifiedBy(user);
+        task.setLastModifiedAt(LocalDateTime.now());
+        taskRepository.save(task);
     }
+
+    @Transactional(rollbackFor = {Exception.class, RuntimeException.class})
+    public void assignToNextTeam(Long taskId) {
+        UserExtension userExtension = (UserExtension) SecurityContextHolder.getContext()
+                .getAuthentication().getPrincipal();
+        User user = userRepository.findByUsername(userExtension.getUsername())
+                .orElseThrow(() -> new RuntimeException(USER_NOT_FOUND));
+        Task task = taskRepository.findById(taskId).orElseThrow(() -> new RuntimeException(TASK_NOT_FOUND));
+
+        for(Allotment allotment: task.getAllotments()) {
+            assignAllotmentToNextTeam(allotment, user);
+        }
+
+        task.setLastModifiedBy(user);
+        task.setLastModifiedAt(LocalDateTime.now());
+        taskRepository.save(task);
+    }
+
+    private void assignAllotmentToNextTeam(Allotment allotment, User user) {
+        Assignee assignee = allotment.getCurrentAssignee();
+        if(assignee.getAssignedToTeam().getDescription() != user.getTeam().getDescription()) {
+            return;
+        }
+
+        assignee.setStatus(Status.DONE);
+        assignee.setEndDate(LocalDateTime.now());
+        assignee.setAssignedTo(user);
+        assigneeRepository.save(assignee);
+
+        Assignee nextAssignee = allotment.getFutureAssignees().stream()
+                .min(Comparator.comparingInt(Assignee::getSequence)).orElse(null);
+        if(nextAssignee != null) {
+            nextAssignee.setStatus(Status.READY_TO_START);
+            assigneeRepository.save(nextAssignee);
+
+            Set<Assignee> futureAssignees = allotment.getFutureAssignees();
+            futureAssignees.remove(nextAssignee);
+            allotment.setFutureAssignees(futureAssignees);
+        }
+
+        Set<Assignee> earlierAssignees = allotment.getEarlierAssignees();
+        earlierAssignees.add(assignee);
+        allotment.setEarlierAssignees(earlierAssignees);
+        allotment.setCurrentAssignee(nextAssignee);
+
+        allotment.setModifiedBy(user);
+        allotment.setLastModifiedAt(LocalDateTime.now());
+        allotmentRepository.save(allotment);
+    }
+
+    @Transactional(rollbackFor = {Exception.class, RuntimeException.class})
+    public void addImages(Long taskId, TaskRequestDto request) {
+        UserExtension userExtension = (UserExtension) SecurityContextHolder.getContext()
+                .getAuthentication().getPrincipal();
+        User user = userRepository.findByUsername(userExtension.getUsername())
+                .orElseThrow(() -> new RuntimeException(USER_NOT_FOUND));
+        Task task = taskRepository.findById(taskId).orElseThrow(() -> new RuntimeException(TASK_NOT_FOUND));
+
+        request.allotments().forEach(
+                allotmentRequestDto -> {
+                    Set<ImageData> referenceImages = new HashSet<>();
+                    allotmentRequestDto.referenceImages().forEach(
+                            imageRequestDto -> {
+                                ImageData image = new ImageData();
+                                image.setImageData(zip(imageRequestDto.data()));
+                                image.setName(imageRequestDto.name());
+                                image.setReference(ImageReference.INITIAL);
+                                referenceImages.add(image);
+                            }
+                    );
+                    imageRepository.saveAll(referenceImages);
+
+                    Allotment allotment = allotmentRepository.findById(allotmentRequestDto.id())
+                            .orElseThrow(() -> new RuntimeException(ALLOTMENT_NOT_FOUND));
+                    allotment.setReferenceImages(referenceImages);
+                    allotment.setModifiedBy(user);
+                    allotment.setLastModifiedAt(LocalDateTime.now());
+                    allotmentRepository.save(allotment);
+                }
+        );
+
+        List<ImageRequestDto> images = request.referenceImages();
+        Set<ImageData> referenceImages = new HashSet<>();
+        if(Objects.nonNull(images)) {
+            images.forEach(
+                    imageRequestDto -> {
+                        ImageData image = new ImageData();
+                        image.setImageData(zip(imageRequestDto.data()));
+                        image.setName(imageRequestDto.name());
+                        image.setReference(ImageReference.FINAL);
+                        referenceImages.add(image);
+                    }
+            );
+            imageRepository.saveAll(referenceImages);
+        }
+        task.setFinalImages(referenceImages);
+        task.setLastModifiedBy(user);
+        task.setLastModifiedAt(LocalDateTime.now());
+        taskRepository.save(task);
+    }
+
 }

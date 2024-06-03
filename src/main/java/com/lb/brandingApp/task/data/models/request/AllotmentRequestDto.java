@@ -9,6 +9,7 @@ import com.lb.brandingApp.product.data.models.request.ProductConfigRequestDto;
 import java.util.List;
 
 public record AllotmentRequestDto(
+        Long id,
         ProductConfigRequestDto product,
         DimensionRequestDto dimension,
         QuantityRequestDto quantity,
