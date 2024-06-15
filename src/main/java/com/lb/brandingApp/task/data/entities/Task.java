@@ -64,7 +64,8 @@ public class Task {
     @OneToOne
     private Amount rent;
 
-    @OneToMany(mappedBy = "task")
+    @OneToMany
+    @JoinColumn(name = "task_id")
     private Set<ImageData> finalImages;
 
     @ManyToOne

@@ -27,4 +27,6 @@ public interface ApplicationConstants {
     String WORKFLOW_INCONSISTENT_ERROR = "Updating Workflow May result in inconsistencies!";
     String ASSIGNEE_CANT_BE_NULL = "Current Assignee can't be null";
 
+    String ALL_TASK_PERMISSION = "all_team_tasks";
+
 }

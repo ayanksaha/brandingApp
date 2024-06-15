@@ -8,6 +8,7 @@ import lombok.Getter;
 @Getter
 @JsonInclude(JsonInclude.Include.NON_NULL)
 public class ImageResponseDto {
+    private Long id;
     private String name;
     private String image;
 }

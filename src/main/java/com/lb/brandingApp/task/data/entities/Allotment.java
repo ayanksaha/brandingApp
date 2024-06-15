@@ -48,7 +48,7 @@ public class Allotment {
     private LocalDateTime expiry;
 
     @ManyToOne
-    @JoinColumn(name = "assignee_id", nullable = false)
+    @JoinColumn(name = "assignee_id")
     private Assignee currentAssignee;
 
     @ManyToMany

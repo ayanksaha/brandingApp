@@ -21,21 +21,32 @@ import com.lb.brandingApp.task.data.entities.Task;
 import com.lb.brandingApp.task.data.models.response.AllotmentResponseDto;
 import com.lb.brandingApp.task.data.models.response.NotesResponseDto;
 import com.lb.brandingApp.task.data.models.response.TaskResponseDto;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Component;
 
 import java.time.LocalDateTime;
 import java.time.temporal.ChronoUnit;
 import java.util.*;
+import java.util.stream.Collectors;
 
 import static com.lb.brandingApp.app.utils.CompressionUtil.unzip;
 
 @Component
 public class TaskMapper {
 
-    public TaskResponseDto mapTaskDetailResponse(Task task) {
+    @Value("${task.status.warning.period.days}")
+    private int warningPeriod;
+
+    public TaskResponseDto mapTaskDetailResponse(Task task, boolean filterTeamTasks, TeamDescription currentTeamDescription) {
         User createdBy = task.getCreatedBy();
         User lastModifiedBy = task.getLastModifiedBy();
         Set<Allotment> allotments = task.getAllotments();
+
+        if(filterTeamTasks) {
+            allotments = allotments.stream().filter(allotment ->
+                    allotment.getCurrentAssignee().getAssignedToTeam().getDescription() == currentTeamDescription)
+                    .collect(Collectors.toSet());
+        }
 
         return TaskResponseDto.builder()
                 .id(task.getId())
@@ -59,7 +70,8 @@ public class TaskMapper {
                 .allotments(
                         allotments.stream().map(
                                 allotment -> AllotmentResponseDto.builder()
-                                        .status(allotment.getCurrentAssignee().getStatus())
+                                        .id(allotment.getId())
+                                        .status((allotment.getCurrentAssignee() == null)? Status.DONE: allotment.getCurrentAssignee().getStatus())
                                         .area(AreaResponseDto.builder()
                                                 .unit(allotment.getArea().getUnit())
                                                 .value(allotment.getArea().getValue())
@@ -84,7 +96,8 @@ public class TaskMapper {
                                                 .map(assignee -> mapTeamResponse(assignee.getAssignedToTeam()))
                                                 .toList())
                                         .assignee(
-                                                Objects.isNull(allotment.getCurrentAssignee().getAssignedTo()) ? null
+                                                (Objects.isNull(allotment.getCurrentAssignee()) ||
+                                                Objects.isNull(allotment.getCurrentAssignee().getAssignedTo())) ? null
                                                         : UserResponseDto.builder()
                                                         .username(allotment.getCurrentAssignee().getAssignedTo().getUsername())
                                                         .name(allotment.getCurrentAssignee().getAssignedTo().getName())
@@ -96,7 +109,8 @@ public class TaskMapper {
                                         .nextTeam(mapTeamResponse(allotment.getFutureAssignees().stream()
                                                 .min(Comparator.comparingInt(Assignee::getSequence)).map(Assignee::getAssignedToTeam)
                                                 .orElse(null)))
-                                        .assignedTeam(mapTeamResponse(allotment.getCurrentAssignee().getAssignedToTeam()))
+                                        .assignedTeam(Objects.isNull(allotment.getCurrentAssignee())? null:
+                                                mapTeamResponse(allotment.getCurrentAssignee().getAssignedToTeam()))
                                         .quantity(QuantityResponseDto.builder()
                                                 .unit(allotment.getQuantity().getUom())
                                                 .value(allotment.getQuantity().getValue())
@@ -124,6 +138,7 @@ public class TaskMapper {
                                                 .build())
                                         .images(allotment.getReferenceImages().stream().map(
                                                 imageData -> ImageResponseDto.builder()
+                                                        .id(imageData.getId())
                                                         .image(unzip(imageData.getImageData()))
                                                         .name(imageData.getName())
                                                         .build()
@@ -151,6 +166,7 @@ public class TaskMapper {
                 .status(mapTaskStatus(task))
                 .images(task.getFinalImages().stream()
                         .map(imageData -> ImageResponseDto.builder()
+                                .id(imageData.getId())
                                 .image(unzip(imageData.getImageData()))
                                 .name(imageData.getName())
                                 .build()
@@ -187,7 +203,7 @@ public class TaskMapper {
     }
 
     public TeamResponseDto mapTeamResponse(Team team) {
-        if (team == null) return TeamResponseDto.builder().build();
+        if (team == null) return null;
         return TeamResponseDto.builder()
                 .teamDescription(team.getDescription().description())
                 .teamName(team.getDescription().name())
@@ -230,7 +246,8 @@ public class TaskMapper {
                                 .build()
                         ).toList())
                 .status(mapTaskStatus(task))
-                .expiry(allotments.stream().filter(allotment -> Objects.nonNull(allotment.getExpiry())).min(Comparator.comparing(Allotment::getExpiry))
+                .expiry(allotments.stream().filter(allotment ->
+                                Objects.nonNull(allotment.getExpiry())).min(Comparator.comparing(Allotment::getExpiry))
                         .map(Allotment::getExpiry).orElse(null))
                 .verifiedAt(verifiedAt)
                 .createdAt(task.getCreatedAt())
@@ -258,8 +275,9 @@ public class TaskMapper {
                 return Status.PENDING_APPROVAL;
             case APPROVED: {
                 List<Assignee> currentAssignees = task.getAllotments().stream().map(Allotment::getCurrentAssignee).toList();
-                if (LocalDateTime.now().truncatedTo(ChronoUnit.DAYS).isAfter(task.getApprovedAt())
-                        && currentAssignees.stream().anyMatch(assignee -> (assignee.getStatus() != Status.DONE))) {
+                if (LocalDateTime.now().minus(warningPeriod, ChronoUnit.DAYS).truncatedTo(ChronoUnit.DAYS).isAfter(task.getApprovedAt())
+                        && currentAssignees.stream().anyMatch(assignee -> Objects.nonNull(assignee)
+                            && (assignee.getStatus() != Status.DONE))) {
                     return Status.PENDING;
                 }
                 if (task.getAllotments().stream().allMatch(allotment -> allotment.getFutureAssignees().isEmpty()
@@ -271,7 +289,8 @@ public class TaskMapper {
             case REJECTED:
                 return Status.REJECTED;
             default: {
-                if (task.getAllotments().stream().allMatch(allotment -> allotment.getFutureAssignees().isEmpty()
+                if (task.getAllotments().stream().allMatch(allotment -> Objects.nonNull(allotment.getFutureAssignees())
+                        && allotment.getFutureAssignees().isEmpty()
                         && Objects.isNull(allotment.getCurrentAssignee()))) {
                     return Status.DONE;
                 }

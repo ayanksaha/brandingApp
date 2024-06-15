@@ -8,6 +8,7 @@ import com.lb.brandingApp.category.data.models.request.CategoryRequestDto;
 import com.lb.brandingApp.category.data.models.request.DistrictRequestDto;
 import com.lb.brandingApp.category.data.models.request.StateRequestDto;
 import com.lb.brandingApp.category.data.models.response.*;
+import com.lb.brandingApp.category.data.projections.CategorySummary;
 import com.lb.brandingApp.category.repository.CategoryRepository;
 import com.lb.brandingApp.category.repository.DistrictRepository;
 import com.lb.brandingApp.category.repository.StateRepository;
@@ -21,6 +22,7 @@ import com.lb.brandingApp.location.data.entities.DistrictConfig;
 import com.lb.brandingApp.location.data.entities.StateConfig;
 import com.lb.brandingApp.location.repository.DistrictConfigRepository;
 import com.lb.brandingApp.location.repository.StateConfigRepository;
+import io.micrometer.common.util.StringUtils;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
@@ -34,7 +36,6 @@ import org.springframework.transaction.annotation.Transactional;
 import java.util.*;
 
 import static com.lb.brandingApp.app.constants.ApplicationConstants.*;
-import static com.lb.brandingApp.app.utils.AppUtil.*;
 import static com.lb.brandingApp.app.utils.CompressionUtil.unzip;
 import static com.lb.brandingApp.app.utils.CompressionUtil.zip;
 
@@ -100,12 +101,19 @@ public class CategoryService {
         PagedModel<AppStatusResource> result = new PagedModel<>(data, metadata);
      */
     public PageResponseDto<CategoryResponseDto> getAllCategories(
-            Integer pageNumber, Integer pageSize, String sortOrder, String sortBy) {
+            Integer pageNumber, Integer pageSize, String sortOrder, String sortBy, String name) {
         Pageable page = PageRequest.of(
                 Optional.ofNullable(pageNumber).orElse(0),
                 Optional.ofNullable(pageSize).orElse(defaultPageSize),
                 Sort.by(Sort.Direction.valueOf(Optional.ofNullable(sortOrder).orElse(defaultSortOrder)),
-                Optional.ofNullable(sortBy).orElse(defaultSortBy)));
+                        Optional.ofNullable(sortBy).orElse(defaultSortBy)));
+        if (StringUtils.isNotBlank(name)) {
+            return getPaginatedCategoriesResponseByName(name, page);
+        }
+        return getPaginatedCategoriesResponse(page);
+    }
+
+    private PageResponseDto<CategoryResponseDto> getPaginatedCategoriesResponse(Pageable page) {
         Page<Category> result = categoryRepository.findAll(page);
         List<CategoryResponseDto> response = result.stream().map(category -> CategoryResponseDto.builder()
                 .id(category.getId())
@@ -128,6 +136,31 @@ public class CategoryService {
                         .value(category.getAggregatedArea().getValue())
                         .unit(category.getAggregatedArea().getUnit())
                         .build())
+                .build()
+        ).toList();
+        return PageResponseDto.<CategoryResponseDto>builder()
+                .content(response)
+                .metadata(
+                        PageResponseDto.PagingMetadata
+                                .builder()
+                                .pageSize(result.getNumberOfElements())
+                                .pageNumber(result.getNumber())
+                                .totalPages(result.getTotalPages())
+                                .totalElements(result.getTotalElements())
+                                .build())
+                .build();
+    }
+
+    private PageResponseDto<CategoryResponseDto> getPaginatedCategoriesResponseByName(String name, Pageable page) {
+        Page<CategorySummary> result = categoryRepository.findAllByNameContaining(name, page);
+        List<CategoryResponseDto> response = result.stream().map(category -> CategoryResponseDto.builder()
+                .id(category.getId())
+                .name(category.getName())
+                .icon(Objects.nonNull(category.getIcon()) ?
+                        ImageResponseDto.builder()
+                                .image(unzip(category.getIcon().getImageData()))
+                                .build()
+                        : null)
                 .build()
         ).toList();
 
@@ -207,7 +240,7 @@ public class CategoryService {
         Category category = categoryRepository.findById(categoryId).orElseThrow(
                 () -> new RuntimeException(CATEGORY_NOT_FOUND));
         String categoryName = request.name();
-        if(Objects.nonNull(categoryName)) {
+        if (Objects.nonNull(categoryName)) {
             category.setName(categoryName);
         }
         ImageRequestDto categoryIcon = request.icon();
@@ -222,7 +255,7 @@ public class CategoryService {
     }
 
     public PageResponseDto<StateResponseDto> getStatesByCategory(Long categoryId,
-             Integer pageNumber, Integer pageSize, String sortOrder, String sortBy) {
+                                                                 Integer pageNumber, Integer pageSize, String sortOrder, String sortBy) {
         Category category = categoryRepository.findById(categoryId).orElseThrow(
                 () -> new RuntimeException(CATEGORY_NOT_FOUND));
         Pageable page = PageRequest.of(
@@ -321,7 +354,7 @@ public class CategoryService {
     }
 
     public PageResponseDto<DistrictResponseDto> getAllDistrictsByState(Long categoryId, Long stateId,
-           Integer pageNumber, Integer pageSize, String sortOrder, String sortBy) {
+                                                                       Integer pageNumber, Integer pageSize, String sortOrder, String sortBy) {
         Category category = categoryRepository.findById(categoryId)
                 .orElseThrow(() -> new RuntimeException(CATEGORY_NOT_FOUND));
         State state = stateRepository.findByIdAndCategory(stateId, category)

@@ -24,8 +24,9 @@ public class CategoryController {
             @RequestParam(value = "page_number", required = false) Integer pageNumber,
             @RequestParam(value = "page_size", required = false) Integer pageSize,
             @RequestParam(value = "sort_by", required = false) String sortBy,
-            @RequestParam(value = "sort_order", required = false) String sortOrder) {
-        return ResponseEntity.ok(categoryService.getAllCategories(pageNumber, pageSize, sortOrder, sortBy));
+            @RequestParam(value = "sort_order", required = false) String sortOrder,
+            @RequestParam(value = "q", required = false) String name) {
+        return ResponseEntity.ok(categoryService.getAllCategories(pageNumber, pageSize, sortOrder, sortBy, name));
     }
 
     @GetMapping("/app/category/{category_id}")

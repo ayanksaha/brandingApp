@@ -13,6 +13,5 @@ public record AllotmentRequestDto(
         ProductConfigRequestDto product,
         DimensionRequestDto dimension,
         QuantityRequestDto quantity,
-        @JsonProperty("images") List<ImageRequestDto> referenceImages,
-        @JsonProperty("notes") String noteText
+        @JsonProperty("images") List<ImageRequestDto> referenceImages
 ) {}

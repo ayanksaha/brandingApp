@@ -4,6 +4,8 @@ import com.lb.brandingApp.app.constants.ApplicationConstants;
 import com.lb.brandingApp.common.data.entities.Dimension;
 import com.lb.brandingApp.common.data.enums.TeamDescription;
 
+import java.math.BigDecimal;
+import java.math.RoundingMode;
 import java.util.Arrays;
 
 public class AppUtil {
@@ -15,6 +17,7 @@ public class AppUtil {
     }
 
     public static double calculateArea(Dimension dimension, int qtyValue) {
-        return (dimension.getLength() * dimension.getWidth()) * qtyValue;
+        return BigDecimal.valueOf((dimension.getLength() * dimension.getWidth()) * qtyValue)
+                .setScale(2, RoundingMode.HALF_UP).doubleValue();
     }
 }
