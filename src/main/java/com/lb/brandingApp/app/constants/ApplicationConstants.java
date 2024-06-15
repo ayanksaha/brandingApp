@@ -29,4 +29,9 @@ public interface ApplicationConstants {
 
     String ALL_TASK_PERMISSION = "all_team_tasks";
 
+    String ERROR_ZIP_BLANK_STRING = "Cannot zip null or empty string";
+    String ERROR_UNZIP_BLANK_STRING = "Cannot unzip null or empty bytes";
+    String ERROR_MSG_ZIP_FAILED = "Failed to zip content";
+    String ERROR_MSG_UNZIP_FAILED = "Failed to unzip content";
+
 }

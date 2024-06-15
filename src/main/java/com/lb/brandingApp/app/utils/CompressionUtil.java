@@ -6,6 +6,8 @@ import java.nio.charset.StandardCharsets;
 import java.util.zip.GZIPInputStream;
 import java.util.zip.GZIPOutputStream;
 
+import static com.lb.brandingApp.app.constants.ApplicationConstants.*;
+
 public class CompressionUtil {
 
 //    public static byte[] compress(byte[] data) {
@@ -46,7 +48,7 @@ public class CompressionUtil {
 
     public static byte[] zip(final String str) {
         if ((str == null) || (str.length() == 0)) {
-            throw new IllegalArgumentException("Cannot zip null or empty string");
+            throw new IllegalArgumentException(ERROR_ZIP_BLANK_STRING);
         }
 
         try (ByteArrayOutputStream byteArrayOutputStream = new ByteArrayOutputStream()) {
@@ -55,13 +57,13 @@ public class CompressionUtil {
             }
             return byteArrayOutputStream.toByteArray();
         } catch(IOException e) {
-            throw new RuntimeException("Failed to zip content", e);
+            throw new RuntimeException(ERROR_MSG_ZIP_FAILED, e);
         }
     }
 
     public static String unzip(final byte[] compressed) {
         if ((compressed == null) || (compressed.length == 0)) {
-            throw new IllegalArgumentException("Cannot unzip null or empty bytes");
+            throw new IllegalArgumentException(ERROR_UNZIP_BLANK_STRING);
         }
         if (!isZipped(compressed)) {
             return new String(compressed);
@@ -81,7 +83,7 @@ public class CompressionUtil {
                 }
             }
         } catch(IOException e) {
-            throw new RuntimeException("Failed to unzip content", e);
+            throw new RuntimeException(ERROR_MSG_UNZIP_FAILED, e);
         }
     }
 
