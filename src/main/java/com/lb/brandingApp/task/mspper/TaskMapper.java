@@ -141,6 +141,7 @@ public class TaskMapper {
                                                         .id(imageData.getId())
                                                         .image(unzip(imageData.getImageData()))
                                                         .name(imageData.getName())
+                                                        .reference(imageData.getReference().name())
                                                         .build()
                                         ).toList())
                                         .build()

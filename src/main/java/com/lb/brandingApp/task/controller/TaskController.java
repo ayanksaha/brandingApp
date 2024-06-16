@@ -53,7 +53,13 @@ public class TaskController {
 
     @PostMapping("/app/task")
     public ResponseEntity<Void> addTask(@RequestBody TaskRequestDto request) {
-        taskService.addTask(request);
+        taskService.addTask(request, false);
+        return ResponseEntity.ok().build();
+    }
+
+    @PostMapping("/app/task/renew")
+    public ResponseEntity<Void> renewTask(@RequestBody TaskRequestDto request) {
+        taskService.renew(request);
         return ResponseEntity.ok().build();
     }
 

@@ -221,7 +221,7 @@ public class TaskService {
     }
 
     @Transactional(rollbackFor = {Exception.class, RuntimeException.class})
-    public void addTask(TaskRequestDto request) {
+    public void addTask(TaskRequestDto request, boolean isRenewRequest) {
         UserExtension userExtension = (UserExtension) SecurityContextHolder.getContext()
                 .getAuthentication().getPrincipal();
         User user = userRepository.findByUsername(userExtension.getUsername())
@@ -246,8 +246,8 @@ public class TaskService {
         Set<Allotment> allotments = request.allotments().stream().map(allotmentRequestDto -> {
 
             Allotment allotment = new Allotment();
-            updateAllotment(user, allotment, allotmentRequestDto, aggregatedArea, aggregatedQty,
-                    aggregatedAmt, isTaskPendingApproval);
+            saveAllotment(user, allotment, allotmentRequestDto, aggregatedArea, aggregatedQty,
+                    aggregatedAmt, isTaskPendingApproval, isRenewRequest, !isRenewRequest);
             allotment.setCreatedBy(user);
             allotment.setModifiedBy(user);
             allotment.setCreatedAt(LocalDateTime.now());
@@ -372,8 +372,8 @@ public class TaskService {
         Set<Allotment> allotments = request.allotments().stream().map(allotmentRequestDto -> {
             Allotment allotment = task.getAllotments().stream().filter(element ->
                     element.getId().longValue() == allotmentRequestDto.id()).findFirst().orElse(new Allotment());
-            updateAllotment(user, allotment, allotmentRequestDto, aggregatedArea, aggregatedQty,
-                    aggregatedAmt, isTaskPendingApproval);
+            saveAllotment(user, allotment, allotmentRequestDto, aggregatedArea, aggregatedQty,
+                    aggregatedAmt, isTaskPendingApproval, false, false);
 
             allotment.setModifiedBy(user);
             allotment.setLastModifiedAt(LocalDateTime.now());
@@ -485,25 +485,32 @@ public class TaskService {
         task.setLastModifiedAt(LocalDateTime.now());
     }
 
-    private void updateAllotment(User user, Allotment allotment, AllotmentRequestDto allotmentRequestDto,
-                                 AtomicReference<Double> aggregatedArea, AtomicReference<Integer> aggregatedQty,
-                                 AtomicReference<Double> aggregatedAmt, AtomicBoolean isTaskPendingApproval) {
+    private void saveAllotment(User user, Allotment allotment, AllotmentRequestDto allotmentRequestDto,
+                               AtomicReference<Double> aggregatedArea, AtomicReference<Integer> aggregatedQty,
+                               AtomicReference<Double> aggregatedAmt, AtomicBoolean isTaskPendingApproval,
+                               boolean isRenewRequest, boolean isCreateRequest) {
         Set<ImageData> referenceImages = Optional.ofNullable(allotment.getReferenceImages()).orElse(new HashSet<>());
         Set<ImageData> newReferenceImages = new HashSet<>();
         Set<Long> storedImageIds = referenceImages.stream().map(ImageData::getId).collect(Collectors.toSet());
-        allotmentRequestDto.referenceImages().forEach(
-                imageRequestDto -> {
-                    if (storedImageIds.contains(imageRequestDto.id())) {
-                        return;
-                    }
-                    ImageData image = new ImageData();
-                    image.setImageData(zip(imageRequestDto.data()));
-                    image.setName(imageRequestDto.name());
-                    image.setReference(ImageReference.valueOf(user.getTeam().getDescription().name()));
-                    referenceImages.add(image);
-                    newReferenceImages.add(image);
-                }
-        );
+        allotmentRequestDto.referenceImages().stream()
+                .filter(imageRequestDto -> !isRenewRequest || ImageReference.valueOf(imageRequestDto.reference()) == ImageReference.INITIAL)
+                .forEach(
+                        imageRequestDto -> {
+                            if (storedImageIds.contains(imageRequestDto.id())) {
+                                return;
+                            }
+                            ImageData image = new ImageData();
+                            image.setImageData(zip(imageRequestDto.data()));
+                            image.setName(imageRequestDto.name());
+                            if (!isCreateRequest && !isRenewRequest) {
+                                image.setReference(ImageReference.valueOf(user.getTeam().getDescription().name()));
+                            } else {
+                                image.setReference(ImageReference.INITIAL);
+                            }
+                            referenceImages.add(image);
+                            newReferenceImages.add(image);
+                        }
+                );
         imageRepository.saveAll(newReferenceImages);
         allotment.setReferenceImages(referenceImages);
 
@@ -517,7 +524,7 @@ public class TaskService {
             dimension.setWidth(width);
         }
 
-        if(Objects.isNull(dimension.getId())) {
+        if (Objects.isNull(dimension.getId())) {
             dimensionRepository.save(dimension);
         }
         allotment.setDimension(dimension);
@@ -529,7 +536,7 @@ public class TaskService {
         if (!qty.getValue().equals(qtyValue)) {
             qty.setValue(qtyValue);
         }
-        if(Objects.isNull(qty.getId())) {
+        if (Objects.isNull(qty.getId())) {
             quantityRepository.save(qty);
         }
         allotment.setQuantity(qty);
@@ -730,6 +737,10 @@ public class TaskService {
         task.setFinalImages(referenceImages);
         task.setLastModifiedBy(user);
         task.setLastModifiedAt(LocalDateTime.now());
+    }
+
+    public void renew(TaskRequestDto request) {
+        addTask(request, true);
     }
 
 }
