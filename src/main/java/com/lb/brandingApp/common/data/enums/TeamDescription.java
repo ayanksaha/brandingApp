@@ -7,6 +7,7 @@ public enum TeamDescription {
     DEVELOPER("Developer"),
     SYS_ADMIN("System Administrator"),
     ADMIN("Administrator"),
+    MEASUREMENT("Measurement"),
     APPROVAL("Approval"),
     DESIGNING("Designing"),
     PRINTING("Printing"),
