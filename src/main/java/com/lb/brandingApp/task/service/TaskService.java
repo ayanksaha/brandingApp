@@ -216,21 +216,40 @@ public class TaskService {
         TeamDescription description = AppUtil.getTeamDescriptionByDescription(authorities.get(0));
         Team currentUserTeam = teamRepository.findByDescription(description)
                 .orElseThrow(() -> new RuntimeException(TEAM_NOT_FOUND));
+        return mapTaskResponseDto(currentUserTeam, task);
+    }
+
+    public TaskResponseDto mapTaskResponseDto(Team currentUserTeam, Task task) {
         boolean filterTeamTasks = currentUserTeam.getPermissions().stream().noneMatch(
                 permission -> permission.getPermissionName().equals(ALL_TASK_PERMISSION));
         return taskMapper.mapTaskDetailResponse(task, filterTeamTasks, currentUserTeam.getDescription());
     }
 
     @Transactional(rollbackFor = {Exception.class, RuntimeException.class})
-    public void addTask(TaskRequestDto request, boolean isRenewRequest) {
+    public void addTask(TaskRequestDto request, boolean isRenewRequest, Long originalTaskId) {
         UserExtension userExtension = (UserExtension) SecurityContextHolder.getContext()
                 .getAuthentication().getPrincipal();
         User user = userRepository.findByUsername(userExtension.getUsername())
                 .orElseThrow(() -> new RuntimeException(USER_NOT_FOUND));
 
         final Task task = new Task();
-        task.setName(request.name() + (isRenewRequest ? " - renewed - " +
-                DateTimeFormatter.ofPattern("dd-MM-yyyy").format(LocalDateTime.now().toLocalDate()) : ""));
+        String taskName;
+        if (isRenewRequest) {
+            final Task originalTask = taskRepository.findById(originalTaskId)
+                    .orElseThrow(() -> new RuntimeException(TASK_NOT_FOUND));
+            task.setRenewedFrom(originalTask);
+            originalTask.setRenewed(true);
+            String originalTaskName = originalTask.getName();
+            originalTaskName = originalTaskName.substring(0,
+                    originalTaskName.contains(" - renewed - ") ?
+                            originalTaskName.indexOf(" - renewed - ") : originalTaskName.length());
+            taskName = originalTaskName + " - renewed - " +
+                    DateTimeFormatter.ofPattern("dd-MM-yyyy").format(LocalDateTime.now().toLocalDate());
+        } else {
+            taskName = request.name();
+        }
+
+        task.setName(taskName);
         task.setLocation(request.location());
         task.setMobileNumber(request.mobileNumber());
 
@@ -348,13 +367,6 @@ public class TaskService {
 
         task.setLastModifiedBy(user);
         task.setLastModifiedAt(LocalDateTime.now());
-
-        if (isRenewRequest) {
-            final Task originalTask = taskRepository.findById(task.getId())
-                    .orElseThrow(() -> new RuntimeException(TASK_NOT_FOUND));
-            task.setRenewedFrom(originalTask);
-            originalTask.setRenewed(true);
-        }
 
         taskRepository.save(task);
     }
@@ -749,8 +761,8 @@ public class TaskService {
         task.setLastModifiedAt(LocalDateTime.now());
     }
 
-    public void renew(TaskRequestDto request) {
-        addTask(request, true);
+    public void renew(TaskRequestDto request, Long originalTaskId) {
+        addTask(request, true, originalTaskId);
     }
 
 }

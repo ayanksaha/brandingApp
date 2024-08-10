@@ -56,16 +56,16 @@ public class TaskController {
     @PostMapping("/app/task")
     public ResponseEntity<Void> addTask(@RequestBody TaskRequestDto request) {
         log.info("addTask called with task name: {}", request.name());
-        taskService.addTask(request, false);
+        taskService.addTask(request, false, null);
         log.info("addTask successful for task name: {}", request.name());
         return ResponseEntity.ok().build();
     }
 
-    @PostMapping("/app/task/renew")
-    public ResponseEntity<Void> renewTask(@RequestBody TaskRequestDto request) {
-        log.info("renewTask called with task name: {}", request.name());
-        taskService.renew(request);
-        log.info("renewTask successful for task name: {}", request.name());
+    @PostMapping("/app/task/{task_id}/renew")
+    public ResponseEntity<Void> renewTask(@PathVariable("task_id") Long taskId, @RequestBody TaskRequestDto request) {
+        log.info("renewTask called with task id: {}", taskId);
+        taskService.renew(request, taskId);
+        log.info("renewTask successful for task id: {}", taskId);
         return ResponseEntity.ok().build();
     }
 

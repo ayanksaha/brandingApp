@@ -51,14 +51,18 @@ public class Allotment {
     @JoinColumn(name = "assignee_id")
     private Assignee currentAssignee;
 
-    @ManyToMany
+    @ManyToOne
+    @JoinColumn(name = "next_assignee_id")
+    private Assignee nextAssignee;
+
+    @ManyToMany(fetch = FetchType.LAZY)
     @JoinTable(
             name = "earlier_assignments",
             joinColumns = @JoinColumn(name = "allotment_id"),
             inverseJoinColumns = @JoinColumn(name = "assignee_id"))
     private Set<Assignee> earlierAssignees;
 
-    @ManyToMany
+    @ManyToMany(fetch = FetchType.LAZY)
     @JoinTable(
             name = "future_assignments",
             joinColumns = @JoinColumn(name = "allotment_id"),
