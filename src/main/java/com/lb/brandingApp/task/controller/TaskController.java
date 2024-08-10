@@ -4,10 +4,12 @@ import com.lb.brandingApp.category.data.models.response.PageResponseDto;
 import com.lb.brandingApp.task.data.models.request.TaskRequestDto;
 import com.lb.brandingApp.task.data.models.response.TaskResponseDto;
 import com.lb.brandingApp.task.service.TaskService;
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
+@Slf4j
 @RestController
 public class TaskController {
 
@@ -53,37 +55,49 @@ public class TaskController {
 
     @PostMapping("/app/task")
     public ResponseEntity<Void> addTask(@RequestBody TaskRequestDto request) {
+        log.info("addTask called with task name: {}", request.name());
         taskService.addTask(request, false);
+        log.info("addTask successful for task name: {}", request.name());
         return ResponseEntity.ok().build();
     }
 
     @PostMapping("/app/task/renew")
     public ResponseEntity<Void> renewTask(@RequestBody TaskRequestDto request) {
+        log.info("renewTask called with task name: {}", request.name());
         taskService.renew(request);
+        log.info("renewTask successful for task name: {}", request.name());
         return ResponseEntity.ok().build();
     }
 
     @PutMapping("/app/task/{task_id}")
     public ResponseEntity<Void> updateTask(@PathVariable("task_id") Long taskId, @RequestBody TaskRequestDto request) {
+        log.info("updateTask called for task id: {}", taskId);
         taskService.updateTask(taskId, request);
+        log.info("updateTask successful for task id: {}", taskId);
         return ResponseEntity.ok().build();
     }
 
     @PutMapping("/app/task/{task_id}/approve")
     public ResponseEntity<Void> approveTask(@PathVariable("task_id") Long taskId, @RequestBody TaskRequestDto request) {
+        log.info("approveTask called for task id: {}", taskId);
         taskService.approve(taskId, request);
+        log.info("approveTask successful for task id: {}", taskId);
         return ResponseEntity.ok().build();
     }
 
     @PutMapping("/app/task/{task_id}/next")
     public ResponseEntity<Void> assignToNextTeam(@PathVariable("task_id") Long taskId, @RequestBody TaskRequestDto request) {
+        log.info("assignToNextTeam called for task id: {}", taskId);
         taskService.assignToNextTeam(taskId, request);
+        log.info("assignToNextTeam successful for task id: {}", taskId);
         return ResponseEntity.ok().build();
     }
 
     @PostMapping("/app/task/{task_id}/images")
     public ResponseEntity<Void> addImages(@PathVariable("task_id") Long taskId, @RequestBody TaskRequestDto request) {
+        log.info("addImages called for task id: {}", taskId);
         taskService.addImages(taskId, request);
+        log.info("addImages successful for task id: {}", taskId);
         return ResponseEntity.ok().build();
     }
 }

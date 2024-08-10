@@ -82,4 +82,9 @@ public class Task {
     @Column(columnDefinition = "TIMESTAMP")
     private LocalDateTime lastModifiedAt;
 
+    private boolean isRenewed;
+
+    @OneToOne(fetch = FetchType.LAZY)
+    private Task renewedFrom;
+
 }

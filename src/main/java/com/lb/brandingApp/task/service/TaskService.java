@@ -49,6 +49,7 @@ import org.springframework.transaction.annotation.Transactional;
 import java.math.BigDecimal;
 import java.math.RoundingMode;
 import java.time.LocalDateTime;
+import java.time.format.DateTimeFormatter;
 import java.util.*;
 import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.concurrent.atomic.AtomicReference;
@@ -227,8 +228,9 @@ public class TaskService {
         User user = userRepository.findByUsername(userExtension.getUsername())
                 .orElseThrow(() -> new RuntimeException(USER_NOT_FOUND));
 
-        Task task = new Task();
-        task.setName(request.name());
+        final Task task = new Task();
+        task.setName(request.name() + (isRenewRequest ? " - renewed - " +
+                DateTimeFormatter.ofPattern("dd-MM-yyyy").format(LocalDateTime.now().toLocalDate()) : ""));
         task.setLocation(request.location());
         task.setMobileNumber(request.mobileNumber());
 
@@ -346,6 +348,14 @@ public class TaskService {
 
         task.setLastModifiedBy(user);
         task.setLastModifiedAt(LocalDateTime.now());
+
+        if (isRenewRequest) {
+            final Task originalTask = taskRepository.findById(task.getId())
+                    .orElseThrow(() -> new RuntimeException(TASK_NOT_FOUND));
+            task.setRenewedFrom(originalTask);
+            originalTask.setRenewed(true);
+        }
+
         taskRepository.save(task);
     }
 
