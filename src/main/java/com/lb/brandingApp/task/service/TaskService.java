@@ -250,6 +250,7 @@ public class TaskService {
         }
 
         task.setName(taskName);
+        task.setGift(request.gift());
         task.setLocation(request.location());
         task.setMobileNumber(request.mobileNumber());
 
@@ -362,6 +363,22 @@ public class TaskService {
             task.setRent(rent);
         }
 
+        List<ImageRequestDto> images = request.agreementImages();
+        Set<ImageData> agreementImages = new HashSet<>();
+        if (Objects.nonNull(images)) {
+            images.forEach(
+                    imageRequestDto -> {
+                        ImageData image = new ImageData();
+                        image.setImageData(zip(imageRequestDto.data()));
+                        image.setName(imageRequestDto.name());
+                        image.setReference(ImageReference.AGREEMENT);
+                        agreementImages.add(image);
+                    }
+            );
+            imageRepository.saveAll(agreementImages);
+        }
+
+        task.setAgreementImages(agreementImages);
         task.setCreatedBy(user);
         task.setCreatedAt(LocalDateTime.now());
 
@@ -728,7 +745,7 @@ public class TaskService {
 
                     Assignee assignee = allotment.getCurrentAssignee();
                     assignee.setStatus(Status.IN_PROGRESS);
-                    assignee.setEndDate(LocalDateTime.now());
+                    assignee.setStartDate(LocalDateTime.now());
                     assignee.setAssignedTo(user);
 
                     allotment.setModifiedBy(user);

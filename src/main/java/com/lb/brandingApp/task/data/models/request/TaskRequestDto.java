@@ -17,8 +17,10 @@ public record TaskRequestDto (
         @NonNull String name,
         DistrictRequestDto district,
         String location,
+        String gift,
         @JsonProperty("mobile_number") String mobileNumber,
         Set<AllotmentRequestDto> allotments,
         AmountRequestDto rent,
-        @JsonProperty("images") List<ImageRequestDto> referenceImages
+        @JsonProperty("images") List<ImageRequestDto> referenceImages,
+        @JsonProperty("agreement_images") List<ImageRequestDto> agreementImages
 ) {}

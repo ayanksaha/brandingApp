@@ -30,6 +30,8 @@ public class Task {
 
     private String location;
 
+    private String gift;
+
     @ManyToOne
     @JoinColumn(name = "district_id", nullable = false)
     private District district;
@@ -65,7 +67,11 @@ public class Task {
     private Amount rent;
 
     @OneToMany
-    @JoinColumn(name = "task_id")
+    @JoinColumn(name = "agreement_task_id")
+    private Set<ImageData> agreementImages;
+
+    @OneToMany
+    @JoinColumn(name = "final_task_id")
     private Set<ImageData> finalImages;
 
     @ManyToOne

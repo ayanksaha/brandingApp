@@ -7,7 +7,6 @@ import com.fasterxml.jackson.databind.annotation.JsonDeserialize;
 import com.fasterxml.jackson.databind.annotation.JsonSerialize;
 import com.fasterxml.jackson.datatype.jsr310.deser.LocalDateTimeDeserializer;
 import com.fasterxml.jackson.datatype.jsr310.ser.LocalDateTimeSerializer;
-import com.lb.brandingApp.auth.data.models.response.TeamResponseDto;
 import com.lb.brandingApp.auth.data.models.response.UserResponseDto;
 import com.lb.brandingApp.category.data.models.response.CategoryResponseDto;
 import com.lb.brandingApp.category.data.models.response.DistrictResponseDto;
@@ -64,6 +63,8 @@ public class TaskResponseDto {
 
     private AmountResponseDto amount;
 
+    private String gift;
+
     @JsonProperty("approval_status")
     private ApprovalStatus approvalStatus;
 
@@ -71,18 +72,33 @@ public class TaskResponseDto {
 
     @JsonDeserialize(using = LocalDateTimeDeserializer.class)
     @JsonSerialize(using = LocalDateTimeSerializer.class)
-    @JsonFormat(shape = JsonFormat.Shape.STRING, pattern = "dd-MM-yyyy HH:mm:ss")
+    @JsonFormat(shape = JsonFormat.Shape.STRING, pattern = "dd-MM-yyyy")
     private LocalDateTime expiry;
 
     private Status status;
 
     private List<ImageResponseDto> images;
 
+    @JsonProperty("agreement_images")
+    List<ImageResponseDto> agreementImages;
+
     @JsonDeserialize(using = LocalDateTimeDeserializer.class)
     @JsonSerialize(using = LocalDateTimeSerializer.class)
-    @JsonFormat(shape = JsonFormat.Shape.STRING, pattern = "dd-MM-yyyy HH:mm:ss")
+    @JsonFormat(shape = JsonFormat.Shape.STRING, pattern = "dd-MM-yyyy")
     @JsonProperty("verified_at")
     private LocalDateTime verifiedAt;
+
+    @JsonProperty("verified_by")
+    private UserResponseDto verifiedBy;
+
+    @JsonDeserialize(using = LocalDateTimeDeserializer.class)
+    @JsonSerialize(using = LocalDateTimeSerializer.class)
+    @JsonFormat(shape = JsonFormat.Shape.STRING, pattern = "dd-MM-yyyy")
+    @JsonProperty("installed_at")
+    private LocalDateTime installedAt;
+
+    @JsonProperty("installed_by")
+    private UserResponseDto installedBy;
 
     @JsonDeserialize(using = LocalDateTimeDeserializer.class)
     @JsonSerialize(using = LocalDateTimeSerializer.class)

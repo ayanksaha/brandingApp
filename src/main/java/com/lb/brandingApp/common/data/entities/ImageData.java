@@ -29,8 +29,12 @@ public class ImageData {
     private byte[] imageData;
 
     @ManyToOne
-    @JoinColumn(name = "task_id")
-    private Task task;
+    @JoinColumn(name = "agreement_task_id")
+    private Task agreementTaskDetails;
+
+    @ManyToOne
+    @JoinColumn(name = "final_task_id")
+    private Task finalTaskDetails;
 
     @ManyToOne
     @JoinColumn(name = "allotment_id")
