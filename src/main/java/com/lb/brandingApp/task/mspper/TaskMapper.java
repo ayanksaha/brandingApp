@@ -52,6 +52,8 @@ public class TaskMapper {
                 .id(task.getId())
                 .name(task.getName())
                 .location(task.getLocation())
+                .latitude(task.getLatitude())
+                .longitude(task.getLongitude())
                 .district(DistrictResponseDto.builder()
                         .name(task.getDistrict().getDistrictConfig().getName())
                         .districtId(task.getDistrict().getId())

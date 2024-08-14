@@ -29,6 +29,7 @@ import com.lb.brandingApp.task.data.entities.Assignee;
 import com.lb.brandingApp.task.data.entities.Task;
 import com.lb.brandingApp.task.data.models.request.AllotmentRequestDto;
 import com.lb.brandingApp.task.data.models.request.TaskRequestDto;
+import com.lb.brandingApp.task.data.models.response.AllotmentResponseDto;
 import com.lb.brandingApp.task.data.models.response.TaskResponseDto;
 import com.lb.brandingApp.task.mspper.TaskMapper;
 import com.lb.brandingApp.task.repository.AllotmentRepository;
@@ -167,7 +168,32 @@ public class TaskService {
                 Sort.by(Sort.Direction.valueOf(Optional.ofNullable(sortOrder).orElse(defaultSortOrder)),
                         Optional.ofNullable(sortBy).orElse(defaultSortBy)));
         Page<Task> result = taskRepository.findAllByAllotments_CurrentAssignee_AssignedToTeam(currentUserTeam, page);
-        List<TaskResponseDto> response = result.stream().map(task -> taskMapper.mapTaskListResponse(task)).toList();
+        List<TaskResponseDto> response = new ArrayList<>(result.stream().map(task -> taskMapper.mapTaskListResponse(task)).toList());
+
+        for (TaskResponseDto taskResponse : response) {
+            TeamDescription teamDescription = null;
+            for (AllotmentResponseDto allotmentResponse : taskResponse.getAllotments()) {
+                if(Objects.isNull(allotmentResponse.getAssignedTeam())) {
+                    continue;
+                }
+                TeamDescription newTeamDescription = TeamDescription.valueOf(allotmentResponse.getAssignedTeam().getTeamDescription());
+                if (Objects.isNull(teamDescription)) {
+                    teamDescription = newTeamDescription;
+                    continue;
+                }
+                if (newTeamDescription.ordinal() < teamDescription.ordinal()
+                        && teamDescription == currentUserTeam.getDescription()) {
+                    response.remove(taskResponse);
+                    break;
+                }
+                if (newTeamDescription.ordinal() > teamDescription.ordinal()
+                        && newTeamDescription == currentUserTeam.getDescription()) {
+                    response.remove(taskResponse);
+                    break;
+                }
+            }
+        }
+
         return PageResponseDto.<TaskResponseDto>builder()
                 .content(response)
                 .metadata(PageResponseDto.PagingMetadata
@@ -252,6 +278,8 @@ public class TaskService {
         task.setName(taskName);
         task.setGift(request.gift());
         task.setLocation(request.location());
+        task.setLatitude(request.latitude());
+        task.setLongitude(request.longitude());
         task.setMobileNumber(request.mobileNumber());
 
         District district = districtRepository.findById(request.district().districtId())

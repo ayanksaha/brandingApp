@@ -17,6 +17,8 @@ public record TaskRequestDto (
         @NonNull String name,
         DistrictRequestDto district,
         String location,
+        Double latitude,
+        Double longitude,
         String gift,
         @JsonProperty("mobile_number") String mobileNumber,
         Set<AllotmentRequestDto> allotments,

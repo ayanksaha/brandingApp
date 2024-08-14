@@ -30,6 +30,10 @@ public class Task {
 
     private String location;
 
+    private Double latitude;
+
+    private Double longitude;
+
     private String gift;
 
     @ManyToOne

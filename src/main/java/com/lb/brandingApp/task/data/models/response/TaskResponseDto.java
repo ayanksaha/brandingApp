@@ -34,6 +34,10 @@ public class TaskResponseDto {
 
     private String location;
 
+    Double latitude;
+
+    Double longitude;
+
     private DistrictResponseDto district;
 
     private StateResponseDto state;
