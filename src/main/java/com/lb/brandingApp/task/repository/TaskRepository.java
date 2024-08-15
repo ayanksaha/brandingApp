@@ -13,7 +13,9 @@ import org.springframework.stereotype.Repository;
 public interface TaskRepository extends JpaRepository<Task, Long> {
     Page<Task> findAllByDistrict(District district, Pageable page);
 
-    Page<Task> findAllByAllotments_CurrentAssignee_AssignedToTeam(Team assignedToTeam, Pageable page);
+    Page<Task> findAllByAllotments_CurrentAssignee_AssignedToTeamAndAllotments_CurrentAssignee_AssignedTo(Team assignedToTeam, User assignedTo, Pageable page);
 
     Page<Task> findAllByAllotments_CurrentAssignee_AssignedTo(User assignedTo, Pageable page);
+
+    Page<Task> findAllByAllotments_EarlierAssignees_AssignedTo(User assignedTo, Pageable page);
 }

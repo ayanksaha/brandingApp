@@ -31,11 +31,14 @@ import com.lb.brandingApp.task.data.models.request.AllotmentRequestDto;
 import com.lb.brandingApp.task.data.models.request.TaskRequestDto;
 import com.lb.brandingApp.task.data.models.response.AllotmentResponseDto;
 import com.lb.brandingApp.task.data.models.response.TaskResponseDto;
-import com.lb.brandingApp.task.mspper.TaskMapper;
+import com.lb.brandingApp.task.mapper.TaskMapper;
 import com.lb.brandingApp.task.repository.AllotmentRepository;
 import com.lb.brandingApp.task.repository.AssigneeRepository;
 import com.lb.brandingApp.task.repository.TaskRepository;
 import lombok.extern.slf4j.Slf4j;
+
+import java.time.temporal.ChronoUnit;
+
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.data.domain.Page;
@@ -151,7 +154,8 @@ public class TaskService {
                 .build();
     }
 
-    public PageResponseDto<TaskResponseDto> getAllTasksByTeam(Integer pageNumber, Integer pageSize, String sortBy, String sortOrder) {
+    public PageResponseDto<TaskResponseDto> getAllTasksByTeam(
+            Integer pageNumber, Integer pageSize, String sortBy, String sortOrder) {
         UserExtension user = (UserExtension) SecurityContextHolder.getContext().getAuthentication().getPrincipal();
         List<String> authorities = user.getAuthorities().stream().map(
                 GrantedAuthority::getAuthority).toList();
@@ -167,16 +171,19 @@ public class TaskService {
                 Optional.ofNullable(pageSize).orElse(defaultPageSize),
                 Sort.by(Sort.Direction.valueOf(Optional.ofNullable(sortOrder).orElse(defaultSortOrder)),
                         Optional.ofNullable(sortBy).orElse(defaultSortBy)));
-        Page<Task> result = taskRepository.findAllByAllotments_CurrentAssignee_AssignedToTeam(currentUserTeam, page);
-        List<TaskResponseDto> response = new ArrayList<>(result.stream().map(task -> taskMapper.mapTaskListResponse(task)).toList());
+        Page<Task> result = taskRepository.
+                findAllByAllotments_CurrentAssignee_AssignedToTeamAndAllotments_CurrentAssignee_AssignedTo(currentUserTeam, null, page);
+        List<TaskResponseDto> response = new ArrayList<>(result.stream()
+                .map(task -> taskMapper.mapTaskListResponse(task)).toList());
 
         for (TaskResponseDto taskResponse : response) {
             TeamDescription teamDescription = null;
             for (AllotmentResponseDto allotmentResponse : taskResponse.getAllotments()) {
-                if(Objects.isNull(allotmentResponse.getAssignedTeam())) {
+                if (Objects.isNull(allotmentResponse.getAssignedTeam())) {
                     continue;
                 }
-                TeamDescription newTeamDescription = TeamDescription.valueOf(allotmentResponse.getAssignedTeam().getTeamDescription());
+                TeamDescription newTeamDescription =
+                        TeamDescription.valueOf(allotmentResponse.getAssignedTeam().getTeamDescription());
                 if (Objects.isNull(teamDescription)) {
                     teamDescription = newTeamDescription;
                     continue;
@@ -206,7 +213,8 @@ public class TaskService {
                 .build();
     }
 
-    public PageResponseDto<TaskResponseDto> getAllTasksByUser(Integer pageNumber, Integer pageSize, String sortBy, String sortOrder) {
+    public PageResponseDto<TaskResponseDto> getAllTasksByUser(
+            Integer pageNumber, Integer pageSize, String sortBy, String sortOrder) {
         UserExtension user = (UserExtension) SecurityContextHolder.getContext().getAuthentication().getPrincipal();
         User currentUser = userRepository.findByUsername(user.getUsername())
                 .orElseThrow(() -> new RuntimeException(USER_NOT_FOUND));
@@ -217,6 +225,31 @@ public class TaskService {
                 Sort.by(Sort.Direction.valueOf(Optional.ofNullable(sortOrder).orElse(defaultSortOrder)),
                         Optional.ofNullable(sortBy).orElse(defaultSortBy)));
         Page<Task> result = taskRepository.findAllByAllotments_CurrentAssignee_AssignedTo(currentUser, page);
+        List<TaskResponseDto> response = result.stream().map(task -> taskMapper.mapTaskListResponse(task)).toList();
+        return PageResponseDto.<TaskResponseDto>builder()
+                .content(response)
+                .metadata(PageResponseDto.PagingMetadata
+                        .builder()
+                        .pageSize(result.getNumberOfElements())
+                        .pageNumber(result.getNumber())
+                        .totalPages(result.getTotalPages())
+                        .totalElements(result.getTotalElements())
+                        .build())
+                .build();
+    }
+
+    public PageResponseDto<TaskResponseDto> getAllPreviousTasksByUser(
+            Integer pageNumber, Integer pageSize, String sortBy, String sortOrder) {
+        UserExtension user = (UserExtension) SecurityContextHolder.getContext().getAuthentication().getPrincipal();
+        User currentUser = userRepository.findByUsername(user.getUsername())
+                .orElseThrow(() -> new RuntimeException(USER_NOT_FOUND));
+
+        Pageable page = PageRequest.of(
+                Optional.ofNullable(pageNumber).orElse(0),
+                Optional.ofNullable(pageSize).orElse(defaultPageSize),
+                Sort.by(Sort.Direction.valueOf(Optional.ofNullable(sortOrder).orElse(defaultSortOrder)),
+                        Optional.ofNullable(sortBy).orElse(defaultSortBy)));
+        Page<Task> result = taskRepository.findAllByAllotments_EarlierAssignees_AssignedTo(currentUser, page);
         List<TaskResponseDto> response = result.stream().map(task -> taskMapper.mapTaskListResponse(task)).toList();
         return PageResponseDto.<TaskResponseDto>builder()
                 .content(response)
@@ -281,6 +314,7 @@ public class TaskService {
         task.setLatitude(request.latitude());
         task.setLongitude(request.longitude());
         task.setMobileNumber(request.mobileNumber());
+        task.setShouldSetExpiry(Objects.nonNull(request.shouldSetExpiry()) && request.shouldSetExpiry());
 
         District district = districtRepository.findById(request.district().districtId())
                 .orElseThrow(() -> new RuntimeException(DISTRICT_NOT_FOUND));
@@ -560,7 +594,8 @@ public class TaskService {
         Set<ImageData> newReferenceImages = new HashSet<>();
         Set<Long> storedImageIds = referenceImages.stream().map(ImageData::getId).collect(Collectors.toSet());
         allotmentRequestDto.referenceImages().stream()
-                .filter(imageRequestDto -> !isRenewRequest || ImageReference.valueOf(imageRequestDto.reference()) == ImageReference.INITIAL)
+                .filter(imageRequestDto -> !isRenewRequest ||
+                        ImageReference.valueOf(imageRequestDto.reference()) == ImageReference.INITIAL)
                 .forEach(
                         imageRequestDto -> {
                             if (storedImageIds.contains(imageRequestDto.id())) {
@@ -682,17 +717,38 @@ public class TaskService {
         Task task = taskRepository.findById(taskId).orElseThrow(() -> new RuntimeException(TASK_NOT_FOUND));
         task.setApprovalStatus(ApprovalStatus.APPROVED);
         task.setApprovedAt(LocalDateTime.now());
-        Set<Long> requestedAllotmentIds = request.allotments().stream().map(AllotmentRequestDto::id).collect(Collectors.toSet());
+        Set<Long> requestedAllotmentIds = request.allotments().stream()
+                .map(AllotmentRequestDto::id).collect(Collectors.toSet());
 
         for (Allotment allotment : task.getAllotments()) {
             if (allotment.getApprovalStatus() == ApprovalStatus.PENDING_APPROVAL
                     && requestedAllotmentIds.contains(allotment.getId())) {
                 allotment.setApprovalStatus(ApprovalStatus.APPROVED);
-                assignAllotmentToNextTeam(allotment, user);
+                assignAllotmentToNextTeam(allotment, task, user);
             }
         }
 
         task.setLastModifiedBy(user);
+        task.setLastModifiedAt(LocalDateTime.now());
+    }
+
+    @Transactional(rollbackFor = {Exception.class, RuntimeException.class})
+    public void assignToUser(Long taskId, String username, TaskRequestDto request) {
+        UserExtension userExtension = (UserExtension) SecurityContextHolder.getContext()
+                .getAuthentication().getPrincipal();
+        User currentUser = userRepository.findByUsername(userExtension.getUsername())
+                .orElseThrow(() -> new RuntimeException(USER_NOT_FOUND));
+        User user = userRepository.findByUsername(username)
+                .orElseThrow(() -> new RuntimeException(USER_NOT_FOUND));
+        Task task = taskRepository.findById(taskId).orElseThrow(() -> new RuntimeException(TASK_NOT_FOUND));
+        Set<Long> requestAllotmentIds =
+                request.allotments().stream().map(AllotmentRequestDto::id).collect(Collectors.toSet());
+        for (Allotment allotment : task.getAllotments()) {
+            if (requestAllotmentIds.contains(allotment.getId())) {
+                assignAllotmentToUser(allotment, user, currentUser);
+            }
+        }
+        task.setLastModifiedBy(currentUser);
         task.setLastModifiedAt(LocalDateTime.now());
     }
 
@@ -708,7 +764,7 @@ public class TaskService {
                 request.allotments().stream().map(AllotmentRequestDto::id).collect(Collectors.toSet());
         for (Allotment allotment : task.getAllotments()) {
             if (requestAllotmentIds.contains(allotment.getId())) {
-                assignAllotmentToNextTeam(allotment, user);
+                assignAllotmentToNextTeam(allotment, task, user);
             }
         }
 
@@ -716,7 +772,7 @@ public class TaskService {
         task.setLastModifiedAt(LocalDateTime.now());
     }
 
-    private void assignAllotmentToNextTeam(Allotment allotment, User user) {
+    private void assignAllotmentToNextTeam(Allotment allotment, Task task, User user) {
         Assignee assignee = allotment.getCurrentAssignee();
         assignee.setStatus(Status.DONE);
         assignee.setEndDate(LocalDateTime.now());
@@ -729,6 +785,10 @@ public class TaskService {
             Set<Assignee> futureAssignees = allotment.getFutureAssignees();
             futureAssignees.remove(nextAssignee);
             allotment.setFutureAssignees(futureAssignees);
+        } else if (taskMapper.mapTaskStatus(task) != Status.DONE
+                && Objects.nonNull(allotment.getExpiry()) && task.isShouldSetExpiry()) {
+            allotment.setExpiry(LocalDateTime.now().plus(allotment.getProductConfig().getValidity().getValue(),
+                    ChronoUnit.valueOf(allotment.getProductConfig().getValidity().getUnit().toString())));
         }
 
         Set<Assignee> earlierAssignees = allotment.getEarlierAssignees();
@@ -737,6 +797,15 @@ public class TaskService {
         allotment.setCurrentAssignee(nextAssignee);
 
         allotment.setModifiedBy(user);
+        allotment.setLastModifiedAt(LocalDateTime.now());
+    }
+
+    private void assignAllotmentToUser(Allotment allotment, User user, User currentUser) {
+        Assignee assignee = allotment.getCurrentAssignee();
+        assignee.setStatus(Status.IN_PROGRESS);
+        assignee.setStartDate(LocalDateTime.now());
+        assignee.setAssignedTo(user);
+        allotment.setModifiedBy(currentUser);
         allotment.setLastModifiedAt(LocalDateTime.now());
     }
 
@@ -750,10 +819,13 @@ public class TaskService {
 
         request.allotments().forEach(
                 allotmentRequestDto -> {
-                    Allotment allotment = task.getAllotments().stream().filter(element -> element.getId().longValue() == allotmentRequestDto.id())
+                    Allotment allotment = task.getAllotments().stream()
+                            .filter(element -> element.getId().longValue() == allotmentRequestDto.id())
                             .findFirst().orElseThrow(() -> new RuntimeException(ALLOTMENT_NOT_FOUND));
-                    Set<ImageData> referenceImages = Optional.ofNullable(allotment.getReferenceImages()).orElse(new HashSet<>());
-                    Set<Long> storedImageIds = referenceImages.stream().map(ImageData::getId).collect(Collectors.toSet());
+                    Set<ImageData> referenceImages =
+                            Optional.ofNullable(allotment.getReferenceImages()).orElse(new HashSet<>());
+                    Set<Long> storedImageIds = referenceImages.stream()
+                            .map(ImageData::getId).collect(Collectors.toSet());
                     Set<ImageData> newReferenceImages = new HashSet<>();
                     allotmentRequestDto.referenceImages().forEach(
                             imageRequestDto -> {
@@ -770,12 +842,6 @@ public class TaskService {
                     );
                     imageRepository.saveAll(newReferenceImages);
                     allotment.setReferenceImages(referenceImages);
-
-                    Assignee assignee = allotment.getCurrentAssignee();
-                    assignee.setStatus(Status.IN_PROGRESS);
-                    assignee.setStartDate(LocalDateTime.now());
-                    assignee.setAssignedTo(user);
-
                     allotment.setModifiedBy(user);
                     allotment.setLastModifiedAt(LocalDateTime.now());
                 }

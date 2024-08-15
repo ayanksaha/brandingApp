@@ -8,6 +8,7 @@ import com.lb.brandingApp.category.data.models.request.DistrictRequestDto;
 import com.lb.brandingApp.common.data.models.request.AmountRequestDto;
 import com.lb.brandingApp.common.data.models.request.ImageRequestDto;
 import lombok.NonNull;
+import lombok.experimental.Accessors;
 
 import java.util.List;
 import java.util.Set;
@@ -24,5 +25,6 @@ public record TaskRequestDto (
         Set<AllotmentRequestDto> allotments,
         AmountRequestDto rent,
         @JsonProperty("images") List<ImageRequestDto> referenceImages,
-        @JsonProperty("agreement_images") List<ImageRequestDto> agreementImages
+        @JsonProperty("agreement_images") List<ImageRequestDto> agreementImages,
+        @JsonProperty("set_expiry") @Accessors(fluent = true) Boolean shouldSetExpiry
 ) {}

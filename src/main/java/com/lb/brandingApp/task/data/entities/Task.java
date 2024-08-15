@@ -97,4 +97,6 @@ public class Task {
     @OneToOne(fetch = FetchType.LAZY)
     private Task renewedFrom;
 
+    private boolean shouldSetExpiry;
+
 }

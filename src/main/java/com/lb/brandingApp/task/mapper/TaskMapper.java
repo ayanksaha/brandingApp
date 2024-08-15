@@ -1,4 +1,4 @@
-package com.lb.brandingApp.task.mspper;
+package com.lb.brandingApp.task.mapper;
 
 import com.lb.brandingApp.auth.data.entities.Team;
 import com.lb.brandingApp.auth.data.entities.User;
@@ -332,7 +332,7 @@ public class TaskMapper {
                 .build();
     }
 
-    private Status mapTaskStatus(Task task) {
+    public Status mapTaskStatus(Task task) {
         switch (task.getApprovalStatus()) {
             case PENDING_APPROVAL:
                 return Status.PENDING_APPROVAL;
