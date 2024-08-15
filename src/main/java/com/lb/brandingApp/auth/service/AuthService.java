@@ -87,12 +87,7 @@ public class AuthService {
     }
 
     public void changePassword(UserRequestDto request) {
-        Authentication authenticationRequest =
-                UsernamePasswordAuthenticationToken.unauthenticated(request.username(), request.password());
-        Authentication authenticationResponse =
-                this.authenticationManager.authenticate(authenticationRequest);
-        UserExtension userDetails = (UserExtension) authenticationResponse.getPrincipal();
-
+        UserExtension userDetails = (UserExtension) SecurityContextHolder.getContext().getAuthentication().getPrincipal();
         String username = userDetails.getUsername();
         User userInDb = userRepository.findByUsername(username)
                 .orElseThrow(() -> new UsernameNotFoundException(USER_NOT_FOUND));
