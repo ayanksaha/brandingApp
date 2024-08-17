@@ -26,5 +26,6 @@ public record TaskRequestDto (
         AmountRequestDto rent,
         @JsonProperty("images") List<ImageRequestDto> referenceImages,
         @JsonProperty("agreement_images") List<ImageRequestDto> agreementImages,
-        @JsonProperty("set_expiry") @Accessors(fluent = true) Boolean shouldSetExpiry
+        @JsonProperty("set_expiry") @Accessors(fluent = true) Boolean shouldSetExpiry,
+        @JsonProperty("adhoc_task_id") Long adhocTaskId
 ) {}

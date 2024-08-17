@@ -95,9 +95,9 @@ public class TaskController {
         return ResponseEntity.ok().build();
     }
 
-    @PutMapping("/app/task/{task_id}/assign/{username}")
+    @PutMapping("/app/task/{task_id}/user/assign")
     public ResponseEntity<Void> assignToUser(
-            @PathVariable("username") Long taskId, @PathVariable("username") String username,
+            @PathVariable("task_id") Long taskId, @RequestParam("username") String username,
             @RequestBody TaskRequestDto request) {
         log.info("assignToUser called for task id: {}, username: {}", taskId, username);
         taskService.assignToUser(taskId, username, request);

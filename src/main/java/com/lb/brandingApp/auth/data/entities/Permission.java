@@ -18,7 +18,7 @@ public class Permission {
     @GeneratedValue
     private Long id;
 
-    @Column(length = 20)
+    @Column(length = 25)
     private String permissionName;
 
     @Column(length = 100)

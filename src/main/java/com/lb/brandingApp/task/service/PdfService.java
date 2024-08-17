@@ -48,13 +48,14 @@ public class PdfService {
             document.add(new Paragraph("This document is empty.").setFont(paraFont)
                     .setFontColor(ColorConstants.ORANGE).setFontSize(10).setTextAlignment(TextAlignment.CENTER));
             document.close();
+            return;
         }
         document.add(new Paragraph(report.getContent().get(0).getCategory().getName()).setFont(paraFont)
                 .setFontColor(ColorConstants.ORANGE).setFontSize(24).setTextAlignment(TextAlignment.CENTER));
         document.add(new Paragraph(dateFormatter.format(toDate) + " - " + dateFormatter.format(fromDate))
                 .setFont(paraFont).setFontColor(ColorConstants.GREEN).setFontSize(18)
                 .setTextAlignment(TextAlignment.CENTER));
-        Table table = new Table((int) (request.configs().size() + ChronoUnit.DAYS.between(fromDate, toDate) + 1)).useAllAvailableWidth();
+        Table table = new Table(request.configs().size()).useAllAvailableWidth();
         table.setMarginTop(10);
         table.setMarginBottom(5);
         addTableHeader(table, request.configs());

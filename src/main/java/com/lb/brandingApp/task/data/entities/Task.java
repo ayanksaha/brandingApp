@@ -28,12 +28,14 @@ public class Task {
     @Column(length = 50)
     private String name;
 
+    @Column(columnDefinition = "MEDIUMTEXT")
     private String location;
 
     private Double latitude;
 
     private Double longitude;
 
+    @Column(length = 50)
     private String gift;
 
     @ManyToOne
@@ -98,5 +100,9 @@ public class Task {
     private Task renewedFrom;
 
     private boolean shouldSetExpiry;
+
+    @OneToOne(fetch = FetchType.LAZY)
+    @JoinColumn(name = "adhoc_task_id", referencedColumnName = "id")
+    private AdhocTask linkedAdhocTask;
 
 }

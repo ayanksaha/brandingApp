@@ -34,9 +34,9 @@ public class TaskResponseDto {
 
     private String location;
 
-    Double latitude;
+    private Double latitude;
 
-    Double longitude;
+    private Double longitude;
 
     private DistrictResponseDto district;
 
@@ -84,7 +84,7 @@ public class TaskResponseDto {
     private List<ImageResponseDto> images;
 
     @JsonProperty("agreement_images")
-    List<ImageResponseDto> agreementImages;
+    private List<ImageResponseDto> agreementImages;
 
     @JsonDeserialize(using = LocalDateTimeDeserializer.class)
     @JsonSerialize(using = LocalDateTimeSerializer.class)

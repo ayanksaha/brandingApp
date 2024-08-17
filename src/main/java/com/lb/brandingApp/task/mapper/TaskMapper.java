@@ -338,7 +338,7 @@ public class TaskMapper {
                 return Status.PENDING_APPROVAL;
             case APPROVED: {
                 List<Assignee> currentAssignees = task.getAllotments().stream().map(Allotment::getCurrentAssignee).toList();
-                if (LocalDateTime.now().minus(warningPeriod, ChronoUnit.DAYS).truncatedTo(ChronoUnit.DAYS).isAfter(task.getApprovedAt())
+                if (LocalDateTime.now().minus(warningPeriod, ChronoUnit.DAYS).isAfter(task.getApprovedAt())
                         && currentAssignees.stream().anyMatch(assignee -> Objects.nonNull(assignee)
                         && (assignee.getStatus() != Status.DONE))) {
                     return Status.PENDING;

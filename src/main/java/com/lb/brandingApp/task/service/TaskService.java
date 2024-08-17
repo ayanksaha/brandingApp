@@ -24,6 +24,7 @@ import com.lb.brandingApp.common.mapper.CommonMapper;
 import com.lb.brandingApp.common.repository.*;
 import com.lb.brandingApp.product.data.entities.ProductConfig;
 import com.lb.brandingApp.product.repository.ProductConfigRepository;
+import com.lb.brandingApp.task.data.entities.AdhocTask;
 import com.lb.brandingApp.task.data.entities.Allotment;
 import com.lb.brandingApp.task.data.entities.Assignee;
 import com.lb.brandingApp.task.data.entities.Task;
@@ -32,6 +33,7 @@ import com.lb.brandingApp.task.data.models.request.TaskRequestDto;
 import com.lb.brandingApp.task.data.models.response.AllotmentResponseDto;
 import com.lb.brandingApp.task.data.models.response.TaskResponseDto;
 import com.lb.brandingApp.task.mapper.TaskMapper;
+import com.lb.brandingApp.task.repository.AdhocTaskRepository;
 import com.lb.brandingApp.task.repository.AllotmentRepository;
 import com.lb.brandingApp.task.repository.AssigneeRepository;
 import com.lb.brandingApp.task.repository.TaskRepository;
@@ -109,6 +111,9 @@ public class TaskService {
 
     @Autowired
     private AssigneeRepository assigneeRepository;
+
+    @Autowired
+    private AdhocTaskRepository adhocTaskRepository;
 
     @Autowired
     private TaskMapper taskMapper;
@@ -315,6 +320,12 @@ public class TaskService {
         task.setLongitude(request.longitude());
         task.setMobileNumber(request.mobileNumber());
         task.setShouldSetExpiry(Objects.nonNull(request.shouldSetExpiry()) && request.shouldSetExpiry());
+
+        if(Objects.nonNull(request.adhocTaskId())) {
+            AdhocTask adhocTask = adhocTaskRepository.findById(request.adhocTaskId())
+                    .orElseThrow(() -> new RuntimeException(TASK_NOT_FOUND));
+            task.setLinkedAdhocTask(adhocTask);
+        }
 
         District district = districtRepository.findById(request.district().districtId())
                 .orElseThrow(() -> new RuntimeException(DISTRICT_NOT_FOUND));
