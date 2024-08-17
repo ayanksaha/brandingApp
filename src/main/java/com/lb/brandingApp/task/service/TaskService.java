@@ -244,7 +244,7 @@ public class TaskService {
     }
 
     public PageResponseDto<TaskResponseDto> getAllPreviousTasksByUser(
-            Integer pageNumber, Integer pageSize, String sortBy, String sortOrder) {
+            Integer pageNumber, Integer pageSize, String sortBy, String sortOrder, boolean includeCreatedBy) {
         UserExtension user = (UserExtension) SecurityContextHolder.getContext().getAuthentication().getPrincipal();
         User currentUser = userRepository.findByUsername(user.getUsername())
                 .orElseThrow(() -> new RuntimeException(USER_NOT_FOUND));
@@ -254,7 +254,8 @@ public class TaskService {
                 Optional.ofNullable(pageSize).orElse(defaultPageSize),
                 Sort.by(Sort.Direction.valueOf(Optional.ofNullable(sortOrder).orElse(defaultSortOrder)),
                         Optional.ofNullable(sortBy).orElse(defaultSortBy)));
-        Page<Task> result = taskRepository.findAllByAllotments_EarlierAssignees_AssignedTo(currentUser, page);
+        Page<Task> result = includeCreatedBy ? taskRepository.findAllByCreatedBy(currentUser, page)
+                : taskRepository.findAllByAllotments_EarlierAssignees_AssignedTo(currentUser, page);
         List<TaskResponseDto> response = result.stream().map(task -> taskMapper.mapTaskListResponse(task)).toList();
         return PageResponseDto.<TaskResponseDto>builder()
                 .content(response)
@@ -268,7 +269,7 @@ public class TaskService {
                 .build();
     }
 
-    public TaskResponseDto getTaskById(Long taskId) {
+    public TaskResponseDto getTaskById(Long taskId, boolean includeAllAllotments) {
         Task task = taskRepository.findById(taskId).orElseThrow(() -> new RuntimeException(TASK_NOT_FOUND));
         UserExtension user = (UserExtension) SecurityContextHolder.getContext().getAuthentication().getPrincipal();
         List<String> authorities = user.getAuthorities().stream().map(
@@ -280,11 +281,11 @@ public class TaskService {
         TeamDescription description = AppUtil.getTeamDescriptionByDescription(authorities.get(0));
         Team currentUserTeam = teamRepository.findByDescription(description)
                 .orElseThrow(() -> new RuntimeException(TEAM_NOT_FOUND));
-        return mapTaskResponseDto(currentUserTeam, task);
+        return mapTaskResponseDto(currentUserTeam, task, includeAllAllotments);
     }
 
-    public TaskResponseDto mapTaskResponseDto(Team currentUserTeam, Task task) {
-        boolean filterTeamTasks = currentUserTeam.getPermissions().stream().noneMatch(
+    public TaskResponseDto mapTaskResponseDto(Team currentUserTeam, Task task, boolean includeAllAllotments) {
+        boolean filterTeamTasks = includeAllAllotments || currentUserTeam.getPermissions().stream().noneMatch(
                 permission -> permission.getPermissionName().equals(ALL_TASK_PERMISSION));
         return taskMapper.mapTaskDetailResponse(task, filterTeamTasks, currentUserTeam.getDescription());
     }
@@ -321,7 +322,7 @@ public class TaskService {
         task.setMobileNumber(request.mobileNumber());
         task.setShouldSetExpiry(Objects.nonNull(request.shouldSetExpiry()) && request.shouldSetExpiry());
 
-        if(Objects.nonNull(request.adhocTaskId())) {
+        if (Objects.nonNull(request.adhocTaskId())) {
             AdhocTask adhocTask = adhocTaskRepository.findById(request.adhocTaskId())
                     .orElseThrow(() -> new RuntimeException(TASK_NOT_FOUND));
             task.setLinkedAdhocTask(adhocTask);

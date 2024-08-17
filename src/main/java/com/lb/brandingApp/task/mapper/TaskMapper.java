@@ -92,6 +92,13 @@ public class TaskMapper {
                                 .name(imageData.getName())
                                 .build()
                         ).toList())
+                .agreementImages(task.getAgreementImages().stream()
+                        .map(imageData -> ImageResponseDto.builder()
+                                .id(imageData.getId())
+                                .image(unzip(imageData.getImageData()))
+                                .name(imageData.getName())
+                                .build()
+                        ).toList())
                 .createdAt(task.getCreatedAt())
                 .createdBy(
                         UserResponseDto.builder()

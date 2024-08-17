@@ -106,7 +106,7 @@ public class AdhocTaskService {
                 Optional.ofNullable(pageSize).orElse(defaultPageSize),
                 Sort.by(Sort.Direction.valueOf(Optional.ofNullable(sortOrder).orElse(defaultSortOrder)),
                         Optional.ofNullable(sortBy).orElse(defaultSortBy)));
-        Page<AdhocTask> result = adhocTaskRepository.findAll(page);
+        Page<AdhocTask> result = adhocTaskRepository.findAllByConvertedTask(null, page);
         List<AdhocTaskResponseDto> response = result.stream().map(this::mapTaskListResponse).toList();
         return PageResponseDto.<AdhocTaskResponseDto>builder()
                 .content(response)

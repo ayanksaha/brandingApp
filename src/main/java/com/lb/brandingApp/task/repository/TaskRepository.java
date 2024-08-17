@@ -18,4 +18,6 @@ public interface TaskRepository extends JpaRepository<Task, Long> {
     Page<Task> findAllByAllotments_CurrentAssignee_AssignedTo(User assignedTo, Pageable page);
 
     Page<Task> findAllByAllotments_EarlierAssignees_AssignedTo(User assignedTo, Pageable page);
+
+    Page<Task> findAllByCreatedBy(User createdBy, Pageable page);
 }

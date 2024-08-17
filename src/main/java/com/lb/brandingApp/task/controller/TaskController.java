@@ -53,14 +53,17 @@ public class TaskController {
             @RequestParam(value = "page_number", required = false) Integer pageNumber,
             @RequestParam(value = "page_size", required = false) Integer pageSize,
             @RequestParam(value = "sort_by", required = false) String sortBy,
-            @RequestParam(value = "sort_order", required = false) String sortOrder
+            @RequestParam(value = "sort_order", required = false) String sortOrder,
+            @RequestParam(value = "include_created_by") boolean includeCreatedBy
     ) {
-        return ResponseEntity.ok(taskService.getAllPreviousTasksByUser(pageNumber, pageSize, sortBy, sortOrder));
+        return ResponseEntity.ok(taskService.getAllPreviousTasksByUser(
+                pageNumber, pageSize, sortBy, sortOrder, includeCreatedBy));
     }
 
     @GetMapping("/app/task/{task_id}")
-    public ResponseEntity<TaskResponseDto> getTaskById(@PathVariable("task_id") Long taskId) {
-        return ResponseEntity.ok(taskService.getTaskById(taskId));
+    public ResponseEntity<TaskResponseDto> getTaskById(
+            @PathVariable("task_id") Long taskId, @RequestParam("include_all_allotments") boolean includeAllAllotments) {
+        return ResponseEntity.ok(taskService.getTaskById(taskId, includeAllAllotments));
     }
 
     @PostMapping("/app/task")
