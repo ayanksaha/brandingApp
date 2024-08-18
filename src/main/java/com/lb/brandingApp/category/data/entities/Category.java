@@ -1,9 +1,6 @@
 package com.lb.brandingApp.category.data.entities;
 
-import com.lb.brandingApp.common.data.entities.Amount;
-import com.lb.brandingApp.common.data.entities.Area;
-import com.lb.brandingApp.common.data.entities.ImageData;
-import com.lb.brandingApp.common.data.entities.Quantity;
+import com.lb.brandingApp.common.data.entities.*;
 import com.lb.brandingApp.product.data.entities.ProductConfig;
 import jakarta.persistence.*;
 import lombok.Getter;
@@ -34,6 +31,9 @@ public class Category {
 
     @OneToOne
     private Amount aggregatedAmount;
+
+    @OneToOne
+    private TimePeriod verificationInterval;
 
     @OneToMany(mappedBy = "category")
     private Set<State> states = new HashSet<>();

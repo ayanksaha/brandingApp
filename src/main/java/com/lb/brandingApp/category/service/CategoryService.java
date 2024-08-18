@@ -15,6 +15,7 @@ import com.lb.brandingApp.category.repository.StateRepository;
 import com.lb.brandingApp.common.data.entities.*;
 import com.lb.brandingApp.common.data.enums.ImageReference;
 import com.lb.brandingApp.common.data.models.request.ImageRequestDto;
+import com.lb.brandingApp.common.data.models.request.TimePeriodRequestDto;
 import com.lb.brandingApp.common.data.models.response.*;
 import com.lb.brandingApp.common.mapper.CommonMapper;
 import com.lb.brandingApp.common.repository.*;
@@ -219,6 +220,15 @@ public class CategoryService {
             image.setReference(ImageReference.ICON);
             imageRepository.save(image);
             category.setIcon(image);
+        }
+
+        TimePeriodRequestDto verificationInterval = request.verificationInterval();
+        if(Objects.nonNull(verificationInterval)) {
+            TimePeriod interval = new TimePeriod();
+            interval.setUnit(verificationInterval.unit());
+            interval.setValue(verificationInterval.value());
+            timePeriodRepository.save(interval);
+            category.setVerificationInterval(interval);
         }
 
         Amount aggregatedAmount = commonMapper.mapAmount(0.0);

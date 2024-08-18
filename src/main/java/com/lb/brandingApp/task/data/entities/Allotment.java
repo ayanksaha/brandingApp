@@ -26,6 +26,12 @@ public class Allotment {
     @JoinColumn(name = "product_id", nullable = false)
     private ProductConfig productConfig;
 
+    @Column(length = 100)
+    private String occasion;
+
+    @Column(length = 100)
+    private String item;
+
     @OneToOne
     private Dimension dimension;
 
@@ -37,6 +43,12 @@ public class Allotment {
 
     @OneToOne
     private Amount amount;
+
+    @OneToOne
+    private Amount amount1;
+
+    @OneToOne
+    private Amount amount2;
 
     @OneToMany(mappedBy = "allotment")
     private Set<Note> notes;
@@ -72,6 +84,10 @@ public class Allotment {
     @OneToMany
     @JoinColumn(name = "allotment_id")
     private Set<ImageData> referenceImages;
+
+    @OneToMany
+    @JoinColumn(name = "invoiced_allotment_id")
+    private Set<ImageData> invoiceImages;
 
     @ManyToOne
     @JoinColumn(name = "allotment_id")

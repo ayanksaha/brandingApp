@@ -20,6 +20,7 @@ import com.lb.brandingApp.common.data.enums.Status;
 import com.lb.brandingApp.common.data.enums.TeamDescription;
 import com.lb.brandingApp.common.data.models.request.AmountRequestDto;
 import com.lb.brandingApp.common.data.models.request.ImageRequestDto;
+import com.lb.brandingApp.common.data.models.response.TimePeriodResponseDto;
 import com.lb.brandingApp.common.mapper.CommonMapper;
 import com.lb.brandingApp.common.repository.*;
 import com.lb.brandingApp.product.data.entities.ProductConfig;
@@ -37,10 +38,8 @@ import com.lb.brandingApp.task.repository.AdhocTaskRepository;
 import com.lb.brandingApp.task.repository.AllotmentRepository;
 import com.lb.brandingApp.task.repository.AssigneeRepository;
 import com.lb.brandingApp.task.repository.TaskRepository;
+import io.micrometer.common.util.StringUtils;
 import lombok.extern.slf4j.Slf4j;
-
-import java.time.temporal.ChronoUnit;
-
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.data.domain.Page;
@@ -56,13 +55,14 @@ import java.math.BigDecimal;
 import java.math.RoundingMode;
 import java.time.LocalDateTime;
 import java.time.format.DateTimeFormatter;
+import java.time.temporal.ChronoUnit;
 import java.util.*;
 import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.concurrent.atomic.AtomicReference;
 import java.util.stream.Collectors;
 
 import static com.lb.brandingApp.app.constants.ApplicationConstants.*;
-import static com.lb.brandingApp.app.utils.AppUtil.*;
+import static com.lb.brandingApp.app.utils.AppUtil.calculateArea;
 import static com.lb.brandingApp.app.utils.CompressionUtil.zip;
 
 @Slf4j
@@ -177,8 +177,12 @@ public class TaskService {
                 Sort.by(Sort.Direction.valueOf(Optional.ofNullable(sortOrder).orElse(defaultSortOrder)),
                         Optional.ofNullable(sortBy).orElse(defaultSortBy)));
         Page<Task> result = taskRepository.
-                findAllByAllotments_CurrentAssignee_AssignedToTeamAndAllotments_CurrentAssignee_AssignedTo(currentUserTeam, null, page);
+                findAllByAllotments_CurrentAssignee_AssignedToTeamAndAllotments_CurrentAssignee_AssignedTo(
+                        currentUserTeam, null, page);
         List<TaskResponseDto> response = new ArrayList<>(result.stream()
+                .filter(task -> task.getAllotments().stream()
+                        .noneMatch(allotment -> allotment.getCurrentAssignee()
+                                .getPickUpDate().isAfter(LocalDateTime.now())))
                 .map(task -> taskMapper.mapTaskListResponse(task)).toList());
 
         for (TaskResponseDto taskResponse : response) {
@@ -316,6 +320,7 @@ public class TaskService {
 
         task.setName(taskName);
         task.setGift(request.gift());
+        task.setSubName(request.subName());
         task.setLocation(request.location());
         task.setLatitude(request.latitude());
         task.setLongitude(request.longitude());
@@ -360,6 +365,15 @@ public class TaskService {
 
         allotmentRepository.saveAll(allotments);
         task.setAllotments(allotments);
+
+        AmountRequestDto requestedCash = request.cash();
+        if (Objects.nonNull(requestedCash)) {
+            Amount cash = commonMapper.mapAmount(requestedCash.value());
+            amountRepository.save(cash);
+            task.setCash(cash);
+            aggregatedAmt.updateAndGet(v -> BigDecimal.valueOf(v + cash.getValue())
+                    .setScale(2, RoundingMode.HALF_UP).doubleValue());
+        }
 
         Area taskAggregatedArea = commonMapper.mapArea(aggregatedArea.get());
         areaRepository.save(taskAggregatedArea);
@@ -470,6 +484,8 @@ public class TaskService {
                 .orElseThrow(() -> new RuntimeException(USER_NOT_FOUND));
         Task task = taskRepository.findById(taskId).orElseThrow(() -> new RuntimeException(TASK_NOT_FOUND));
         task.setName(request.name());
+        task.setGift(request.gift());
+        task.setSubName(request.subName());
         task.setLocation(request.location());
         task.setMobileNumber(request.mobileNumber());
 
@@ -628,6 +644,34 @@ public class TaskService {
         imageRepository.saveAll(newReferenceImages);
         allotment.setReferenceImages(referenceImages);
 
+        Set<ImageData> invoiceImages = Optional.ofNullable(allotment.getInvoiceImages()).orElse(new HashSet<>());
+        Set<ImageData> newInvoiceImages = new HashSet<>();
+        Set<Long> storedInvoiceImageIds = invoiceImages.stream().map(ImageData::getId).collect(Collectors.toSet());
+        allotmentRequestDto.invoiceImages().forEach(
+                imageRequestDto -> {
+                    if (storedInvoiceImageIds.contains(imageRequestDto.id())) {
+                        return;
+                    }
+                    ImageData image = new ImageData();
+                    image.setImageData(zip(imageRequestDto.data()));
+                    image.setName(imageRequestDto.name());
+                    image.setReference(ImageReference.INVOICE);
+
+                    invoiceImages.add(image);
+                    newInvoiceImages.add(image);
+                }
+        );
+        imageRepository.saveAll(newInvoiceImages);
+        allotment.setInvoiceImages(invoiceImages);
+
+        if (StringUtils.isNotBlank(allotmentRequestDto.occasion())) {
+            allotment.setOccasion(allotmentRequestDto.occasion());
+        }
+
+        if (StringUtils.isNotBlank(allotmentRequestDto.item())) {
+            allotment.setItem(allotmentRequestDto.item());
+        }
+
         Double length = allotmentRequestDto.dimension().length();
         Double width = allotmentRequestDto.dimension().width();
         Dimension dimension = Optional.ofNullable(allotment.getDimension())
@@ -704,9 +748,27 @@ public class TaskService {
 
         allotment.setArea(area);
 
-        Amount unitAmt = productConfig.getAmount();
-        double totalAllotmentAmt = (calculatedArea > 0) ? (unitAmt.getValue() * calculatedArea)
-                : (unitAmt.getValue() * qtyValue);
+        double totalAllotmentAmt;
+        if (Objects.nonNull(allotmentRequestDto.amount1()) && Objects.nonNull(allotmentRequestDto.amount2())) {
+            final Amount amount1 = Optional.ofNullable(allotment.getAmount1()).orElse(commonMapper.mapAmount(allotmentRequestDto.amount1().value()));
+            if (Objects.isNull(amount1.getId())) {
+                amountRepository.save(amount1);
+            }
+            allotment.setAmount1(amount1);
+
+            final Amount amount2 = Optional.ofNullable(allotment.getAmount2()).orElse(commonMapper.mapAmount(allotmentRequestDto.amount2().value()));
+            if (Objects.isNull(amount2.getId())) {
+                amountRepository.save(amount2);
+            }
+            allotment.setAmount2(amount2);
+
+            totalAllotmentAmt = amount1.getValue() + amount2.getValue();
+        } else {
+            Amount unitAmt = productConfig.getAmount();
+            totalAllotmentAmt = (calculatedArea > 0) ? (unitAmt.getValue() * calculatedArea)
+                    : (unitAmt.getValue() * qtyValue);
+        }
+
         aggregatedAmt.updateAndGet(v -> BigDecimal.valueOf(v + totalAllotmentAmt)
                 .setScale(2, RoundingMode.HALF_UP).doubleValue());
         Amount amount = Optional.ofNullable(allotment.getAmount()).orElse(commonMapper.mapAmount(totalAllotmentAmt));
@@ -797,10 +859,21 @@ public class TaskService {
             Set<Assignee> futureAssignees = allotment.getFutureAssignees();
             futureAssignees.remove(nextAssignee);
             allotment.setFutureAssignees(futureAssignees);
-        } else if (taskMapper.mapTaskStatus(task) != Status.DONE
-                && Objects.nonNull(allotment.getExpiry()) && task.isShouldSetExpiry()) {
+        } else if (Objects.nonNull(allotment.getExpiry()) && task.isShouldSetExpiry()) {
             allotment.setExpiry(LocalDateTime.now().plus(allotment.getProductConfig().getValidity().getValue(),
                     ChronoUnit.valueOf(allotment.getProductConfig().getValidity().getUnit().toString())));
+        }
+
+        final Category category = task.getDistrict().getState().getCategory();
+        final LocalDateTime nextPickUpDate = Objects.nonNull(category.getVerificationInterval()) ?
+                LocalDateTime.now().plus(category.getVerificationInterval().getValue(),
+                        ChronoUnit.valueOf(category.getVerificationInterval().getUnit().name())) : null;
+
+        if (nextAssignee == null && assignee.getAssignedToTeam().getDescription() == TeamDescription.VERIFICATION
+                && Objects.nonNull(nextPickUpDate) && allotment.getExpiry().isAfter(nextPickUpDate)) {
+            nextAssignee = new Assignee();
+            nextAssignee.setAssignedToTeam(assignee.getAssignedToTeam());
+            nextAssignee.setPickUpDate(nextPickUpDate);
         }
 
         Set<Assignee> earlierAssignees = allotment.getEarlierAssignees();

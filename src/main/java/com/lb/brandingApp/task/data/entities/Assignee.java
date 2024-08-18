@@ -50,10 +50,12 @@ public class Assignee {
     @JoinColumn(name = "assignee_id")
     private Set<Allotment> currentAssignments;
 
-    //TODO
     @OneToMany
     @JoinColumn(name = "next_assignee_id")
     private Set<Allotment> nextAssignments;
+
+    @Column(columnDefinition = "TIMESTAMP")
+    private LocalDateTime pickUpDate;
 
     @Column(columnDefinition = "TIMESTAMP")
     private LocalDateTime startDate;

@@ -124,6 +124,8 @@ public class TaskMapper {
         return allotments.stream().map(
                 allotment -> AllotmentResponseDto.builder()
                         .id(allotment.getId())
+                        .occasion(allotment.getOccasion())
+                        .item(allotment.getItem())
                         .status((allotment.getCurrentAssignee() == null) ? Status.DONE : allotment.getCurrentAssignee().getStatus())
                         .area(AreaResponseDto.builder()
                                 .unit(allotment.getArea().getUnit())
@@ -172,6 +174,14 @@ public class TaskMapper {
                                 .currency(allotment.getAmount().getCurrency())
                                 .value(allotment.getAmount().getValue())
                                 .build())
+                        .amount1(AmountResponseDto.builder()
+                                .currency(allotment.getAmount1().getCurrency())
+                                .value(allotment.getAmount1().getValue())
+                                .build())
+                        .amount2(AmountResponseDto.builder()
+                                .currency(allotment.getAmount2().getCurrency())
+                                .value(allotment.getAmount2().getValue())
+                                .build())
                         .approvalStatus(allotment.getApprovalStatus())
                         .createdAt(allotment.getCreatedAt())
                         .createdBy(UserResponseDto.builder()
@@ -190,6 +200,14 @@ public class TaskMapper {
                                 .team(allotment.getModifiedBy().getTeam().getDescription().description())
                                 .build())
                         .images(allotment.getReferenceImages().stream().map(
+                                imageData -> ImageResponseDto.builder()
+                                        .id(imageData.getId())
+                                        .image(unzip(imageData.getImageData()))
+                                        .name(imageData.getName())
+                                        .reference(imageData.getReference().name())
+                                        .build()
+                        ).toList())
+                        .invoiceImages(allotment.getInvoiceImages().stream().map(
                                 imageData -> ImageResponseDto.builder()
                                         .id(imageData.getId())
                                         .image(unzip(imageData.getImageData()))
@@ -345,9 +363,15 @@ public class TaskMapper {
                 return Status.PENDING_APPROVAL;
             case APPROVED: {
                 List<Assignee> currentAssignees = task.getAllotments().stream().map(Allotment::getCurrentAssignee).toList();
+                if (currentAssignees.stream().allMatch(assignee ->
+                        Objects.nonNull(assignee)
+                                && (assignee.getAssignedToTeam().getDescription() == TeamDescription.VERIFICATION)
+                                && (assignee.getPickUpDate().isAfter(LocalDateTime.now())))) {
+                    return Status.UNDER_WARRANTY;
+                }
                 if (LocalDateTime.now().minus(warningPeriod, ChronoUnit.DAYS).isAfter(task.getApprovedAt())
-                        && currentAssignees.stream().anyMatch(assignee -> Objects.nonNull(assignee)
-                        && (assignee.getStatus() != Status.DONE))) {
+                        && currentAssignees.stream().anyMatch(assignee ->
+                        Objects.nonNull(assignee) && (assignee.getStatus() != Status.DONE))) {
                     return Status.PENDING;
                 }
                 if (task.getAllotments().stream().allMatch(allotment -> allotment.getFutureAssignees().isEmpty()

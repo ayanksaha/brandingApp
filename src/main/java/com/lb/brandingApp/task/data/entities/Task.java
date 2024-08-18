@@ -38,6 +38,9 @@ public class Task {
     @Column(length = 50)
     private String gift;
 
+    @Column(length = 50)
+    private String subName;
+
     @ManyToOne
     @JoinColumn(name = "district_id", nullable = false)
     private District district;
@@ -71,6 +74,9 @@ public class Task {
 
     @OneToOne
     private Amount rent;
+
+    @OneToOne
+    private Amount cash;
 
     @OneToMany
     @JoinColumn(name = "agreement_task_id")

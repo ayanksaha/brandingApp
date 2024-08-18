@@ -67,7 +67,12 @@ public class TaskResponseDto {
 
     private AmountResponseDto amount;
 
+    private AmountResponseDto cash;
+
     private String gift;
+
+    @JsonProperty("sub_name")
+    private String subName;
 
     @JsonProperty("approval_status")
     private ApprovalStatus approvalStatus;

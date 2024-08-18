@@ -8,10 +8,10 @@ import com.fasterxml.jackson.databind.annotation.JsonSerialize;
 import com.fasterxml.jackson.datatype.jsr310.deser.LocalDateTimeDeserializer;
 import com.fasterxml.jackson.datatype.jsr310.ser.LocalDateTimeSerializer;
 import com.lb.brandingApp.auth.data.models.response.TeamResponseDto;
+import com.lb.brandingApp.auth.data.models.response.UserResponseDto;
+import com.lb.brandingApp.common.data.enums.ApprovalStatus;
 import com.lb.brandingApp.common.data.enums.Status;
 import com.lb.brandingApp.common.data.models.response.*;
-import com.lb.brandingApp.common.data.enums.ApprovalStatus;
-import com.lb.brandingApp.auth.data.models.response.UserResponseDto;
 import com.lb.brandingApp.product.data.models.response.ProductConfigResponseDto;
 import lombok.Builder;
 import lombok.Getter;
@@ -28,6 +28,10 @@ public class AllotmentResponseDto {
 
     private ProductConfigResponseDto product;
 
+    private String occasion;
+
+    private String item;
+
     private DimensionResponseDto dimension;
 
     private AreaResponseDto area;
@@ -35,6 +39,10 @@ public class AllotmentResponseDto {
     private QuantityResponseDto quantity;
 
     private AmountResponseDto amount;
+
+    private AmountResponseDto amount1;
+
+    private AmountResponseDto amount2;
 
     @JsonProperty("approval_status")
     private ApprovalStatus approvalStatus;
@@ -44,6 +52,9 @@ public class AllotmentResponseDto {
     private List<NotesResponseDto> notes;
 
     private List<ImageResponseDto> images;
+
+    @JsonProperty("invoice_images")
+    private List<ImageResponseDto> invoiceImages;
 
     private UserResponseDto assignee;
 

@@ -40,4 +40,8 @@ public class ImageData {
     @JoinColumn(name = "allotment_id")
     private Allotment allotment;
 
+    @ManyToOne
+    @JoinColumn(name = "invoiced_allotment_id")
+    private Allotment invoicedAllotment;
+
 }
