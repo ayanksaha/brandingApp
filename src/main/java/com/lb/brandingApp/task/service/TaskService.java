@@ -181,7 +181,10 @@ public class TaskService {
                         currentUserTeam, null, page);
         List<TaskResponseDto> response = new ArrayList<>(result.stream()
                 .filter(task -> task.getAllotments().stream()
-                        .noneMatch(allotment -> allotment.getCurrentAssignee()
+                        .noneMatch(allotment -> Objects.nonNull(allotment.getCurrentAssignee())
+                                && Objects.nonNull(allotment.getCurrentAssignee()
+                                .getPickUpDate())
+                                && allotment.getCurrentAssignee()
                                 .getPickUpDate().isAfter(LocalDateTime.now())))
                 .map(task -> taskMapper.mapTaskListResponse(task)).toList());
 
