@@ -1,5 +1,6 @@
 package com.lb.brandingApp.common.data.entities;
 
+import com.lb.brandingApp.task.data.entities.AdhocTask;
 import com.lb.brandingApp.task.data.entities.Allotment;
 import com.lb.brandingApp.task.data.entities.Task;
 import com.lb.brandingApp.common.data.enums.ImageReference;
@@ -39,6 +40,10 @@ public class ImageData {
     @ManyToOne
     @JoinColumn(name = "allotment_id")
     private Allotment allotment;
+
+    @ManyToOne
+    @JoinColumn(name = "adhoc_task_id")
+    private AdhocTask adhocTask;
 
     @ManyToOne
     @JoinColumn(name = "invoiced_allotment_id")

@@ -121,7 +121,7 @@ public class ProductConfigService {
         ProductConfig product = productConfigRepository.findByIdAndCategory(productId, category)
                 .orElseThrow(() -> new RuntimeException(PRODUCT_NOT_FOUND));
         String productName = request.productName();
-        if(Objects.nonNull(productName)) {
+        if (Objects.nonNull(productName)) {
             product.setName(productName);
         }
         if (Objects.nonNull(request.amount())) {
@@ -129,10 +129,10 @@ public class ProductConfigService {
             amount.setValue(request.amount().value());
             product.setAmount(amount);
         }
-        if(!product.getAllotments().isEmpty() && !request.workflow().isEmpty()) {
+        if (Objects.nonNull(request.workflow()) && !product.getAllotments().isEmpty() && !request.workflow().isEmpty()) {
             throw new RuntimeException(WORKFLOW_INCONSISTENT_ERROR);
         }
-        if(!request.workflow().isEmpty()) {
+        if (Objects.nonNull(request.workflow()) && !request.workflow().isEmpty()) {
             Set<WorkflowItem> workflow = new LinkedHashSet<>();
 
             //Setting workflow for newer tasks only

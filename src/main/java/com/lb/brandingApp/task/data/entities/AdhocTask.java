@@ -2,12 +2,14 @@ package com.lb.brandingApp.task.data.entities;
 
 import com.lb.brandingApp.auth.data.entities.User;
 import com.lb.brandingApp.category.data.entities.District;
+import com.lb.brandingApp.common.data.entities.ImageData;
 import jakarta.persistence.*;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
 import lombok.Setter;
 
 import java.time.LocalDateTime;
+import java.util.Set;
 
 @Entity
 @Table(name = "adhoc_task")
@@ -31,6 +33,10 @@ public class AdhocTask {
     private Double latitude;
 
     private Double longitude;
+
+    @OneToMany
+    @JoinColumn(name = "adhoc_task_id")
+    private Set<ImageData> referenceImages;
 
     @ManyToOne
     @JoinColumn(name = "district_id", nullable = false)

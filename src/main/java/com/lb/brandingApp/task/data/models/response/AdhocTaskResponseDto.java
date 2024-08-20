@@ -12,10 +12,12 @@ import com.lb.brandingApp.category.data.models.response.CategoryResponseDto;
 import com.lb.brandingApp.category.data.models.response.DistrictResponseDto;
 import com.lb.brandingApp.category.data.models.response.StateResponseDto;
 import com.lb.brandingApp.common.data.enums.Status;
+import com.lb.brandingApp.common.data.models.response.ImageResponseDto;
 import lombok.Builder;
 import lombok.Getter;
 
 import java.time.LocalDateTime;
+import java.util.Set;
 
 @Builder
 @Getter
@@ -54,6 +56,9 @@ public class AdhocTaskResponseDto {
     private StateResponseDto state;
 
     private CategoryResponseDto category;
+
+    @JsonProperty("reference_images")
+    private Set<ImageResponseDto> referenceImages;
 
     @JsonDeserialize(using = LocalDateTimeDeserializer.class)
     @JsonSerialize(using = LocalDateTimeSerializer.class)

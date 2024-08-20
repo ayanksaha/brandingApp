@@ -12,7 +12,12 @@ import com.lb.brandingApp.category.data.models.response.DistrictResponseDto;
 import com.lb.brandingApp.category.data.models.response.PageResponseDto;
 import com.lb.brandingApp.category.data.models.response.StateResponseDto;
 import com.lb.brandingApp.category.repository.DistrictRepository;
+import com.lb.brandingApp.common.data.entities.ImageData;
+import com.lb.brandingApp.common.data.enums.ImageReference;
 import com.lb.brandingApp.common.data.enums.Status;
+import com.lb.brandingApp.common.data.models.request.ImageRequestDto;
+import com.lb.brandingApp.common.data.models.response.ImageResponseDto;
+import com.lb.brandingApp.common.repository.ImageRepository;
 import com.lb.brandingApp.task.data.entities.AdhocTask;
 import com.lb.brandingApp.task.data.entities.Task;
 import com.lb.brandingApp.task.data.models.request.AdhocTaskRequestDto;
@@ -31,11 +36,11 @@ import org.springframework.transaction.annotation.Transactional;
 
 import java.time.LocalDateTime;
 import java.time.temporal.ChronoUnit;
-import java.util.List;
-import java.util.Objects;
-import java.util.Optional;
+import java.util.*;
 
 import static com.lb.brandingApp.app.constants.ApplicationConstants.*;
+import static com.lb.brandingApp.app.utils.CompressionUtil.unzip;
+import static com.lb.brandingApp.app.utils.CompressionUtil.zip;
 
 @Service
 public class AdhocTaskService {
@@ -46,6 +51,8 @@ public class AdhocTaskService {
     private UserRepository userRepository;
     @Autowired
     private DistrictRepository districtRepository;
+    @Autowired
+    private ImageRepository imageRepository;
     @Autowired
     private TaskMapper taskMapper;
     @Value("${tasks.default.sort.by}")
@@ -177,6 +184,18 @@ public class AdhocTaskService {
         State state = district.getState();
         Category category = state.getCategory();
 
+        Set<ImageResponseDto> imageResponses = new HashSet<>();
+        if(Objects.nonNull(task.getReferenceImages()) && !task.getReferenceImages().isEmpty()) {
+            for(ImageData refImage: task.getReferenceImages()) {
+                ImageResponseDto imageResponse = ImageResponseDto.builder()
+                        .image(unzip(refImage.getImageData()))
+                        .name(refImage.getName())
+                        .reference(refImage.getReference().name())
+                        .build();
+                imageResponses.add(imageResponse);
+            }
+        }
+
         return AdhocTaskResponseDto.builder()
                 .id(task.getId())
                 .name(task.getName())
@@ -205,6 +224,7 @@ public class AdhocTaskService {
                         .id(category.getId())
                         .name(category.getName())
                         .build())
+                .referenceImages(imageResponses)
                 .build();
     }
 
@@ -239,6 +259,19 @@ public class AdhocTaskService {
         adhocTask.setLatitude(request.latitude());
         adhocTask.setLongitude(request.longitude());
         adhocTask.setDistrict(district);
+
+        Set<ImageData> referenceImages = new HashSet<>();
+        if (Objects.nonNull(request.referenceImages()) && !request.referenceImages().isEmpty()) {
+            for (ImageRequestDto imageRequest : request.referenceImages()) {
+                ImageData image = new ImageData();
+                image.setImageData(zip(imageRequest.data()));
+                image.setReference(ImageReference.INITIAL);
+                image.setName(imageRequest.name());
+                referenceImages.add(image);
+            }
+            imageRepository.saveAll(referenceImages);
+        }
+        adhocTask.setReferenceImages(referenceImages);
         return adhocTask;
     }
 }

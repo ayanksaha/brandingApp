@@ -368,6 +368,7 @@ public class TaskMapper {
                 if (currentAssignees.stream().allMatch(assignee ->
                         Objects.nonNull(assignee)
                                 && (assignee.getAssignedToTeam().getDescription() == TeamDescription.VERIFICATION)
+                                && (Objects.nonNull(assignee.getPickUpDate()))
                                 && (assignee.getPickUpDate().isAfter(LocalDateTime.now())))) {
                     return Status.UNDER_WARRANTY;
                 }

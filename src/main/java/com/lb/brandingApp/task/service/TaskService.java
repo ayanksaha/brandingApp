@@ -292,7 +292,7 @@ public class TaskService {
     }
 
     public TaskResponseDto mapTaskResponseDto(Team currentUserTeam, Task task, boolean includeAllAllotments) {
-        boolean filterTeamTasks = includeAllAllotments || currentUserTeam.getPermissions().stream().noneMatch(
+        boolean filterTeamTasks = !includeAllAllotments && currentUserTeam.getPermissions().stream().noneMatch(
                 permission -> permission.getPermissionName().equals(ALL_TASK_PERMISSION));
         return taskMapper.mapTaskDetailResponse(task, filterTeamTasks, currentUserTeam.getDescription());
     }
