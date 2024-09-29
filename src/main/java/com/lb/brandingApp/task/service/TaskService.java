@@ -624,7 +624,7 @@ public class TaskService {
         Set<ImageData> referenceImages = Optional.ofNullable(allotment.getReferenceImages()).orElse(new HashSet<>());
         Set<ImageData> newReferenceImages = new HashSet<>();
         Set<Long> storedImageIds = referenceImages.stream().map(ImageData::getId).collect(Collectors.toSet());
-        allotmentRequestDto.referenceImages().stream()
+        Optional.ofNullable(allotmentRequestDto.referenceImages()).orElse(Collections.emptyList()).stream()
                 .filter(imageRequestDto -> !isRenewRequest ||
                         ImageReference.valueOf(imageRequestDto.reference()) == ImageReference.INITIAL)
                 .forEach(
@@ -650,7 +650,7 @@ public class TaskService {
         Set<ImageData> invoiceImages = Optional.ofNullable(allotment.getInvoiceImages()).orElse(new HashSet<>());
         Set<ImageData> newInvoiceImages = new HashSet<>();
         Set<Long> storedInvoiceImageIds = invoiceImages.stream().map(ImageData::getId).collect(Collectors.toSet());
-        allotmentRequestDto.invoiceImages().forEach(
+        Optional.ofNullable(allotmentRequestDto.invoiceImages()).orElse(Collections.emptyList()).forEach(
                 imageRequestDto -> {
                     if (storedInvoiceImageIds.contains(imageRequestDto.id())) {
                         return;

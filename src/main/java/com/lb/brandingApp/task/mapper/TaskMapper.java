@@ -99,6 +99,7 @@ public class TaskMapper {
                                 .name(imageData.getName())
                                 .build()
                         ).toList())
+                .subName(task.getSubName())
                 .createdAt(task.getCreatedAt())
                 .createdBy(
                         UserResponseDto.builder()
