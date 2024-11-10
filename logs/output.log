@@ -1,0 +1,356 @@
+2024-11-09T13:56:50.426+05:30  INFO 79552 --- [main] com.lb.brandingApp.BrandingApplication   : Starting BrandingApplication using Java 17.0.13 with PID 79552 (/Users/ayankumarsaha/IdeaProjects/brandingApp/target/classes started by ayankumarsaha in /Users/ayankumarsaha/IdeaProjects/brandingApp)
+2024-11-09T13:56:50.427+05:30  INFO 79552 --- [main] com.lb.brandingApp.BrandingApplication   : The following 1 profile is active: "local"
+2024-11-09T13:56:50.755+05:30  INFO 79552 --- [main] .s.d.r.c.RepositoryConfigurationDelegate : Bootstrapping Spring Data JPA repositories in DEFAULT mode.
+2024-11-09T13:56:50.805+05:30  INFO 79552 --- [main] .s.d.r.c.RepositoryConfigurationDelegate : Finished Spring Data repository scanning in 46 ms. Found 20 JPA repository interfaces.
+2024-11-09T13:56:51.025+05:30  INFO 79552 --- [main] o.s.b.w.embedded.tomcat.TomcatWebServer  : Tomcat initialized with port 8082 (http)
+2024-11-09T13:56:51.029+05:30  INFO 79552 --- [main] o.apache.catalina.core.StandardService   : Starting service [Tomcat]
+2024-11-09T13:56:51.030+05:30  INFO 79552 --- [main] o.apache.catalina.core.StandardEngine    : Starting Servlet engine: [Apache Tomcat/10.1.24]
+2024-11-09T13:56:51.060+05:30  INFO 79552 --- [main] o.a.c.c.C.[Tomcat].[localhost].[/]       : Initializing Spring embedded WebApplicationContext
+2024-11-09T13:56:51.060+05:30  INFO 79552 --- [main] w.s.c.ServletWebServerApplicationContext : Root WebApplicationContext: initialization completed in 610 ms
+2024-11-09T13:56:51.135+05:30  INFO 79552 --- [main] o.hibernate.jpa.internal.util.LogHelper  : HHH000204: Processing PersistenceUnitInfo [name: default]
+2024-11-09T13:56:51.158+05:30  INFO 79552 --- [main] org.hibernate.Version                    : HHH000412: Hibernate ORM core version 6.5.2.Final
+2024-11-09T13:56:51.171+05:30  INFO 79552 --- [main] o.h.c.internal.RegionFactoryInitiator    : HHH000026: Second-level cache disabled
+2024-11-09T13:56:51.290+05:30  INFO 79552 --- [main] o.s.o.j.p.SpringPersistenceUnitInfo      : No LoadTimeWeaver setup: ignoring JPA class transformer
+2024-11-09T13:56:51.300+05:30  INFO 79552 --- [main] com.zaxxer.hikari.HikariDataSource       : HikariPool-1 - Starting...
+2024-11-09T13:56:51.428+05:30  INFO 79552 --- [main] com.zaxxer.hikari.pool.HikariPool        : HikariPool-1 - Added connection com.mysql.cj.jdbc.ConnectionImpl@3c9e19de
+2024-11-09T13:56:51.429+05:30  INFO 79552 --- [main] com.zaxxer.hikari.HikariDataSource       : HikariPool-1 - Start completed.
+2024-11-09T13:56:52.059+05:30  INFO 79552 --- [main] o.h.e.t.j.p.i.JtaPlatformInitiator       : HHH000489: No JTA platform available (set 'hibernate.transaction.jta.platform' to enable JTA platform integration)
+2024-11-09T13:56:52.113+05:30 DEBUG 79552 --- [main] n.t.d.l.l.SLF4JQueryLoggingListener      : 
+Name:dataSource, Connection:2, Time:16, Success:True
+Type:Statement, Batch:False, QuerySize:1, BatchSize:0
+Query:["alter table adhoc_task modify column description MEDIUMTEXT"]
+Params:[]
+2024-11-09T13:56:52.124+05:30 DEBUG 79552 --- [main] n.t.d.l.l.SLF4JQueryLoggingListener      : 
+Name:dataSource, Connection:2, Time:11, Success:True
+Type:Statement, Batch:False, QuerySize:1, BatchSize:0
+Query:["alter table adhoc_task modify column location MEDIUMTEXT"]
+Params:[]
+2024-11-09T13:56:52.130+05:30 DEBUG 79552 --- [main] n.t.d.l.l.SLF4JQueryLoggingListener      : 
+Name:dataSource, Connection:2, Time:5, Success:True
+Type:Statement, Batch:False, QuerySize:1, BatchSize:0
+Query:["alter table image_data modify column data LONGBLOB"]
+Params:[]
+2024-11-09T13:56:52.137+05:30 DEBUG 79552 --- [main] n.t.d.l.l.SLF4JQueryLoggingListener      : 
+Name:dataSource, Connection:2, Time:7, Success:True
+Type:Statement, Batch:False, QuerySize:1, BatchSize:0
+Query:["alter table task modify column location MEDIUMTEXT"]
+Params:[]
+2024-11-09T13:56:52.149+05:30 DEBUG 79552 --- [main] n.t.d.l.l.SLF4JQueryLoggingListener      : 
+Name:dataSource, Connection:2, Time:0, Success:True
+Type:Prepared, Batch:False, QuerySize:1, BatchSize:0
+Query:["select * from `branding_app_local`.`district` where 1=0"]
+Params:[()]
+2024-11-09T13:56:52.150+05:30 DEBUG 79552 --- [main] n.t.d.l.l.SLF4JQueryLoggingListener      : 
+Name:dataSource, Connection:2, Time:0, Success:True
+Type:Prepared, Batch:False, QuerySize:1, BatchSize:0
+Query:["select * from `branding_app_local`.`user` where 1=0"]
+Params:[()]
+2024-11-09T13:56:52.151+05:30 DEBUG 79552 --- [main] n.t.d.l.l.SLF4JQueryLoggingListener      : 
+Name:dataSource, Connection:2, Time:0, Success:True
+Type:Prepared, Batch:False, QuerySize:1, BatchSize:0
+Query:["select * from `branding_app_local`.`user` where 1=0"]
+Params:[()]
+2024-11-09T13:56:52.156+05:30 DEBUG 79552 --- [main] n.t.d.l.l.SLF4JQueryLoggingListener      : 
+Name:dataSource, Connection:2, Time:0, Success:True
+Type:Prepared, Batch:False, QuerySize:1, BatchSize:0
+Query:["select * from `branding_app_local`.`amount` where 1=0"]
+Params:[()]
+2024-11-09T13:56:52.157+05:30 DEBUG 79552 --- [main] n.t.d.l.l.SLF4JQueryLoggingListener      : 
+Name:dataSource, Connection:2, Time:0, Success:True
+Type:Prepared, Batch:False, QuerySize:1, BatchSize:0
+Query:["select * from `branding_app_local`.`amount` where 1=0"]
+Params:[()]
+2024-11-09T13:56:52.158+05:30 DEBUG 79552 --- [main] n.t.d.l.l.SLF4JQueryLoggingListener      : 
+Name:dataSource, Connection:2, Time:0, Success:True
+Type:Prepared, Batch:False, QuerySize:1, BatchSize:0
+Query:["select * from `branding_app_local`.`amount` where 1=0"]
+Params:[()]
+2024-11-09T13:56:52.159+05:30 DEBUG 79552 --- [main] n.t.d.l.l.SLF4JQueryLoggingListener      : 
+Name:dataSource, Connection:2, Time:0, Success:True
+Type:Prepared, Batch:False, QuerySize:1, BatchSize:0
+Query:["select * from `branding_app_local`.`assignee` where 1=0"]
+Params:[()]
+2024-11-09T13:56:52.160+05:30 DEBUG 79552 --- [main] n.t.d.l.l.SLF4JQueryLoggingListener      : 
+Name:dataSource, Connection:2, Time:0, Success:True
+Type:Prepared, Batch:False, QuerySize:1, BatchSize:0
+Query:["select * from `branding_app_local`.`assignee` where 1=0"]
+Params:[()]
+2024-11-09T13:56:52.162+05:30 DEBUG 79552 --- [main] n.t.d.l.l.SLF4JQueryLoggingListener      : 
+Name:dataSource, Connection:2, Time:0, Success:True
+Type:Prepared, Batch:False, QuerySize:1, BatchSize:0
+Query:["select * from `branding_app_local`.`calculated_area` where 1=0"]
+Params:[()]
+2024-11-09T13:56:52.163+05:30 DEBUG 79552 --- [main] n.t.d.l.l.SLF4JQueryLoggingListener      : 
+Name:dataSource, Connection:2, Time:0, Success:True
+Type:Prepared, Batch:False, QuerySize:1, BatchSize:0
+Query:["select * from `branding_app_local`.`dimension` where 1=0"]
+Params:[()]
+2024-11-09T13:56:52.164+05:30 DEBUG 79552 --- [main] n.t.d.l.l.SLF4JQueryLoggingListener      : 
+Name:dataSource, Connection:2, Time:0, Success:True
+Type:Prepared, Batch:False, QuerySize:1, BatchSize:0
+Query:["select * from `branding_app_local`.`product_config` where 1=0"]
+Params:[()]
+2024-11-09T13:56:52.165+05:30 DEBUG 79552 --- [main] n.t.d.l.l.SLF4JQueryLoggingListener      : 
+Name:dataSource, Connection:2, Time:0, Success:True
+Type:Prepared, Batch:False, QuerySize:1, BatchSize:0
+Query:["select * from `branding_app_local`.`quantity` where 1=0"]
+Params:[()]
+2024-11-09T13:56:52.166+05:30 DEBUG 79552 --- [main] n.t.d.l.l.SLF4JQueryLoggingListener      : 
+Name:dataSource, Connection:2, Time:0, Success:True
+Type:Prepared, Batch:False, QuerySize:1, BatchSize:0
+Query:["select * from `branding_app_local`.`task` where 1=0"]
+Params:[()]
+2024-11-09T13:56:52.167+05:30 DEBUG 79552 --- [main] n.t.d.l.l.SLF4JQueryLoggingListener      : 
+Name:dataSource, Connection:2, Time:0, Success:True
+Type:Prepared, Batch:False, QuerySize:1, BatchSize:0
+Query:["select * from `branding_app_local`.`user` where 1=0"]
+Params:[()]
+2024-11-09T13:56:52.168+05:30 DEBUG 79552 --- [main] n.t.d.l.l.SLF4JQueryLoggingListener      : 
+Name:dataSource, Connection:2, Time:0, Success:True
+Type:Prepared, Batch:False, QuerySize:1, BatchSize:0
+Query:["select * from `branding_app_local`.`user` where 1=0"]
+Params:[()]
+2024-11-09T13:56:52.172+05:30 DEBUG 79552 --- [main] n.t.d.l.l.SLF4JQueryLoggingListener      : 
+Name:dataSource, Connection:2, Time:0, Success:True
+Type:Prepared, Batch:False, QuerySize:1, BatchSize:0
+Query:["select * from `branding_app_local`.`notes` where 1=0"]
+Params:[()]
+2024-11-09T13:56:52.173+05:30 DEBUG 79552 --- [main] n.t.d.l.l.SLF4JQueryLoggingListener      : 
+Name:dataSource, Connection:2, Time:0, Success:True
+Type:Prepared, Batch:False, QuerySize:1, BatchSize:0
+Query:["select * from `branding_app_local`.`team` where 1=0"]
+Params:[()]
+2024-11-09T13:56:52.174+05:30 DEBUG 79552 --- [main] n.t.d.l.l.SLF4JQueryLoggingListener      : 
+Name:dataSource, Connection:2, Time:0, Success:True
+Type:Prepared, Batch:False, QuerySize:1, BatchSize:0
+Query:["select * from `branding_app_local`.`user` where 1=0"]
+Params:[()]
+2024-11-09T13:56:52.178+05:30 DEBUG 79552 --- [main] n.t.d.l.l.SLF4JQueryLoggingListener      : 
+Name:dataSource, Connection:2, Time:0, Success:True
+Type:Prepared, Batch:False, QuerySize:1, BatchSize:0
+Query:["select * from `branding_app_local`.`amount` where 1=0"]
+Params:[()]
+2024-11-09T13:56:52.179+05:30 DEBUG 79552 --- [main] n.t.d.l.l.SLF4JQueryLoggingListener      : 
+Name:dataSource, Connection:2, Time:0, Success:True
+Type:Prepared, Batch:False, QuerySize:1, BatchSize:0
+Query:["select * from `branding_app_local`.`calculated_area` where 1=0"]
+Params:[()]
+2024-11-09T13:56:52.181+05:30 DEBUG 79552 --- [main] n.t.d.l.l.SLF4JQueryLoggingListener      : 
+Name:dataSource, Connection:2, Time:1, Success:True
+Type:Prepared, Batch:False, QuerySize:1, BatchSize:0
+Query:["select * from `branding_app_local`.`image_data` where 1=0"]
+Params:[()]
+2024-11-09T13:56:52.182+05:30 DEBUG 79552 --- [main] n.t.d.l.l.SLF4JQueryLoggingListener      : 
+Name:dataSource, Connection:2, Time:0, Success:True
+Type:Prepared, Batch:False, QuerySize:1, BatchSize:0
+Query:["select * from `branding_app_local`.`quantity` where 1=0"]
+Params:[()]
+2024-11-09T13:56:52.183+05:30 DEBUG 79552 --- [main] n.t.d.l.l.SLF4JQueryLoggingListener      : 
+Name:dataSource, Connection:2, Time:0, Success:True
+Type:Prepared, Batch:False, QuerySize:1, BatchSize:0
+Query:["select * from `branding_app_local`.`time_period` where 1=0"]
+Params:[()]
+2024-11-09T13:56:52.186+05:30 DEBUG 79552 --- [main] n.t.d.l.l.SLF4JQueryLoggingListener      : 
+Name:dataSource, Connection:2, Time:0, Success:True
+Type:Prepared, Batch:False, QuerySize:1, BatchSize:0
+Query:["select * from `branding_app_local`.`amount` where 1=0"]
+Params:[()]
+2024-11-09T13:56:52.187+05:30 DEBUG 79552 --- [main] n.t.d.l.l.SLF4JQueryLoggingListener      : 
+Name:dataSource, Connection:2, Time:0, Success:True
+Type:Prepared, Batch:False, QuerySize:1, BatchSize:0
+Query:["select * from `branding_app_local`.`calculated_area` where 1=0"]
+Params:[()]
+2024-11-09T13:56:52.188+05:30 DEBUG 79552 --- [main] n.t.d.l.l.SLF4JQueryLoggingListener      : 
+Name:dataSource, Connection:2, Time:0, Success:True
+Type:Prepared, Batch:False, QuerySize:1, BatchSize:0
+Query:["select * from `branding_app_local`.`district_config` where 1=0"]
+Params:[()]
+2024-11-09T13:56:52.189+05:30 DEBUG 79552 --- [main] n.t.d.l.l.SLF4JQueryLoggingListener      : 
+Name:dataSource, Connection:2, Time:0, Success:True
+Type:Prepared, Batch:False, QuerySize:1, BatchSize:0
+Query:["select * from `branding_app_local`.`quantity` where 1=0"]
+Params:[()]
+2024-11-09T13:56:52.190+05:30 DEBUG 79552 --- [main] n.t.d.l.l.SLF4JQueryLoggingListener      : 
+Name:dataSource, Connection:2, Time:1, Success:True
+Type:Prepared, Batch:False, QuerySize:1, BatchSize:0
+Query:["select * from `branding_app_local`.`state` where 1=0"]
+Params:[()]
+2024-11-09T13:56:52.195+05:30 DEBUG 79552 --- [main] n.t.d.l.l.SLF4JQueryLoggingListener      : 
+Name:dataSource, Connection:2, Time:1, Success:True
+Type:Prepared, Batch:False, QuerySize:1, BatchSize:0
+Query:["select * from `branding_app_local`.`state_config` where 1=0"]
+Params:[()]
+2024-11-09T13:56:52.203+05:30 DEBUG 79552 --- [main] n.t.d.l.l.SLF4JQueryLoggingListener      : 
+Name:dataSource, Connection:2, Time:1, Success:True
+Type:Prepared, Batch:False, QuerySize:1, BatchSize:0
+Query:["select * from `branding_app_local`.`allotment` where 1=0"]
+Params:[()]
+2024-11-09T13:56:52.205+05:30 DEBUG 79552 --- [main] n.t.d.l.l.SLF4JQueryLoggingListener      : 
+Name:dataSource, Connection:2, Time:0, Success:True
+Type:Prepared, Batch:False, QuerySize:1, BatchSize:0
+Query:["select * from `branding_app_local`.`assignee` where 1=0"]
+Params:[()]
+2024-11-09T13:56:52.212+05:30 DEBUG 79552 --- [main] n.t.d.l.l.SLF4JQueryLoggingListener      : 
+Name:dataSource, Connection:2, Time:0, Success:True
+Type:Prepared, Batch:False, QuerySize:1, BatchSize:0
+Query:["select * from `branding_app_local`.`allotment` where 1=0"]
+Params:[()]
+2024-11-09T13:56:52.214+05:30 DEBUG 79552 --- [main] n.t.d.l.l.SLF4JQueryLoggingListener      : 
+Name:dataSource, Connection:2, Time:1, Success:True
+Type:Prepared, Batch:False, QuerySize:1, BatchSize:0
+Query:["select * from `branding_app_local`.`assignee` where 1=0"]
+Params:[()]
+2024-11-09T13:56:52.221+05:30 DEBUG 79552 --- [main] n.t.d.l.l.SLF4JQueryLoggingListener      : 
+Name:dataSource, Connection:2, Time:0, Success:True
+Type:Prepared, Batch:False, QuerySize:1, BatchSize:0
+Query:["select * from `branding_app_local`.`adhoc_task` where 1=0"]
+Params:[()]
+2024-11-09T13:56:52.223+05:30 DEBUG 79552 --- [main] n.t.d.l.l.SLF4JQueryLoggingListener      : 
+Name:dataSource, Connection:2, Time:0, Success:True
+Type:Prepared, Batch:False, QuerySize:1, BatchSize:0
+Query:["select * from `branding_app_local`.`allotment` where 1=0"]
+Params:[()]
+2024-11-09T13:56:52.225+05:30 DEBUG 79552 --- [main] n.t.d.l.l.SLF4JQueryLoggingListener      : 
+Name:dataSource, Connection:2, Time:1, Success:True
+Type:Prepared, Batch:False, QuerySize:1, BatchSize:0
+Query:["select * from `branding_app_local`.`allotment` where 1=0"]
+Params:[()]
+2024-11-09T13:56:52.226+05:30 DEBUG 79552 --- [main] n.t.d.l.l.SLF4JQueryLoggingListener      : 
+Name:dataSource, Connection:2, Time:0, Success:True
+Type:Prepared, Batch:False, QuerySize:1, BatchSize:0
+Query:["select * from `branding_app_local`.`task` where 1=0"]
+Params:[()]
+2024-11-09T13:56:52.227+05:30 DEBUG 79552 --- [main] n.t.d.l.l.SLF4JQueryLoggingListener      : 
+Name:dataSource, Connection:2, Time:0, Success:True
+Type:Prepared, Batch:False, QuerySize:1, BatchSize:0
+Query:["select * from `branding_app_local`.`task` where 1=0"]
+Params:[()]
+2024-11-09T13:56:52.234+05:30 DEBUG 79552 --- [main] n.t.d.l.l.SLF4JQueryLoggingListener      : 
+Name:dataSource, Connection:2, Time:1, Success:True
+Type:Prepared, Batch:False, QuerySize:1, BatchSize:0
+Query:["select * from `branding_app_local`.`allotment` where 1=0"]
+Params:[()]
+2024-11-09T13:56:52.237+05:30 DEBUG 79552 --- [main] n.t.d.l.l.SLF4JQueryLoggingListener      : 
+Name:dataSource, Connection:2, Time:0, Success:True
+Type:Prepared, Batch:False, QuerySize:1, BatchSize:0
+Query:["select * from `branding_app_local`.`amount` where 1=0"]
+Params:[()]
+2024-11-09T13:56:52.238+05:30 DEBUG 79552 --- [main] n.t.d.l.l.SLF4JQueryLoggingListener      : 
+Name:dataSource, Connection:2, Time:0, Success:True
+Type:Prepared, Batch:False, QuerySize:1, BatchSize:0
+Query:["select * from `branding_app_local`.`category` where 1=0"]
+Params:[()]
+2024-11-09T13:56:52.239+05:30 DEBUG 79552 --- [main] n.t.d.l.l.SLF4JQueryLoggingListener      : 
+Name:dataSource, Connection:2, Time:0, Success:True
+Type:Prepared, Batch:False, QuerySize:1, BatchSize:0
+Query:["select * from `branding_app_local`.`time_period` where 1=0"]
+Params:[()]
+2024-11-09T13:56:52.243+05:30 DEBUG 79552 --- [main] n.t.d.l.l.SLF4JQueryLoggingListener      : 
+Name:dataSource, Connection:2, Time:0, Success:True
+Type:Prepared, Batch:False, QuerySize:1, BatchSize:0
+Query:["select * from `branding_app_local`.`amount` where 1=0"]
+Params:[()]
+2024-11-09T13:56:52.244+05:30 DEBUG 79552 --- [main] n.t.d.l.l.SLF4JQueryLoggingListener      : 
+Name:dataSource, Connection:2, Time:0, Success:True
+Type:Prepared, Batch:False, QuerySize:1, BatchSize:0
+Query:["select * from `branding_app_local`.`calculated_area` where 1=0"]
+Params:[()]
+2024-11-09T13:56:52.245+05:30 DEBUG 79552 --- [main] n.t.d.l.l.SLF4JQueryLoggingListener      : 
+Name:dataSource, Connection:2, Time:0, Success:True
+Type:Prepared, Batch:False, QuerySize:1, BatchSize:0
+Query:["select * from `branding_app_local`.`category` where 1=0"]
+Params:[()]
+2024-11-09T13:56:52.246+05:30 DEBUG 79552 --- [main] n.t.d.l.l.SLF4JQueryLoggingListener      : 
+Name:dataSource, Connection:2, Time:0, Success:True
+Type:Prepared, Batch:False, QuerySize:1, BatchSize:0
+Query:["select * from `branding_app_local`.`quantity` where 1=0"]
+Params:[()]
+2024-11-09T13:56:52.247+05:30 DEBUG 79552 --- [main] n.t.d.l.l.SLF4JQueryLoggingListener      : 
+Name:dataSource, Connection:2, Time:0, Success:True
+Type:Prepared, Batch:False, QuerySize:1, BatchSize:0
+Query:["select * from `branding_app_local`.`state_config` where 1=0"]
+Params:[()]
+2024-11-09T13:56:52.250+05:30 DEBUG 79552 --- [main] n.t.d.l.l.SLF4JQueryLoggingListener      : 
+Name:dataSource, Connection:2, Time:0, Success:True
+Type:Prepared, Batch:False, QuerySize:1, BatchSize:0
+Query:["select * from `branding_app_local`.`adhoc_task` where 1=0"]
+Params:[()]
+2024-11-09T13:56:52.251+05:30 DEBUG 79552 --- [main] n.t.d.l.l.SLF4JQueryLoggingListener      : 
+Name:dataSource, Connection:2, Time:0, Success:True
+Type:Prepared, Batch:False, QuerySize:1, BatchSize:0
+Query:["select * from `branding_app_local`.`amount` where 1=0"]
+Params:[()]
+2024-11-09T13:56:52.260+05:30 DEBUG 79552 --- [main] n.t.d.l.l.SLF4JQueryLoggingListener      : 
+Name:dataSource, Connection:2, Time:1, Success:True
+Type:Prepared, Batch:False, QuerySize:1, BatchSize:0
+Query:["select * from `branding_app_local`.`amount` where 1=0"]
+Params:[()]
+2024-11-09T13:56:52.262+05:30 DEBUG 79552 --- [main] n.t.d.l.l.SLF4JQueryLoggingListener      : 
+Name:dataSource, Connection:2, Time:1, Success:True
+Type:Prepared, Batch:False, QuerySize:1, BatchSize:0
+Query:["select * from `branding_app_local`.`amount` where 1=0"]
+Params:[()]
+2024-11-09T13:56:52.263+05:30 DEBUG 79552 --- [main] n.t.d.l.l.SLF4JQueryLoggingListener      : 
+Name:dataSource, Connection:2, Time:0, Success:True
+Type:Prepared, Batch:False, QuerySize:1, BatchSize:0
+Query:["select * from `branding_app_local`.`calculated_area` where 1=0"]
+Params:[()]
+2024-11-09T13:56:52.264+05:30 DEBUG 79552 --- [main] n.t.d.l.l.SLF4JQueryLoggingListener      : 
+Name:dataSource, Connection:2, Time:0, Success:True
+Type:Prepared, Batch:False, QuerySize:1, BatchSize:0
+Query:["select * from `branding_app_local`.`district` where 1=0"]
+Params:[()]
+2024-11-09T13:56:52.266+05:30 DEBUG 79552 --- [main] n.t.d.l.l.SLF4JQueryLoggingListener      : 
+Name:dataSource, Connection:2, Time:0, Success:True
+Type:Prepared, Batch:False, QuerySize:1, BatchSize:0
+Query:["select * from `branding_app_local`.`quantity` where 1=0"]
+Params:[()]
+2024-11-09T13:56:52.267+05:30 DEBUG 79552 --- [main] n.t.d.l.l.SLF4JQueryLoggingListener      : 
+Name:dataSource, Connection:2, Time:0, Success:True
+Type:Prepared, Batch:False, QuerySize:1, BatchSize:0
+Query:["select * from `branding_app_local`.`task` where 1=0"]
+Params:[()]
+2024-11-09T13:56:52.269+05:30 DEBUG 79552 --- [main] n.t.d.l.l.SLF4JQueryLoggingListener      : 
+Name:dataSource, Connection:2, Time:1, Success:True
+Type:Prepared, Batch:False, QuerySize:1, BatchSize:0
+Query:["select * from `branding_app_local`.`user` where 1=0"]
+Params:[()]
+2024-11-09T13:56:52.271+05:30 DEBUG 79552 --- [main] n.t.d.l.l.SLF4JQueryLoggingListener      : 
+Name:dataSource, Connection:2, Time:1, Success:True
+Type:Prepared, Batch:False, QuerySize:1, BatchSize:0
+Query:["select * from `branding_app_local`.`user` where 1=0"]
+Params:[()]
+2024-11-09T13:56:52.278+05:30 DEBUG 79552 --- [main] n.t.d.l.l.SLF4JQueryLoggingListener      : 
+Name:dataSource, Connection:2, Time:0, Success:True
+Type:Prepared, Batch:False, QuerySize:1, BatchSize:0
+Query:["select * from `branding_app_local`.`permission` where 1=0"]
+Params:[()]
+2024-11-09T13:56:52.279+05:30 DEBUG 79552 --- [main] n.t.d.l.l.SLF4JQueryLoggingListener      : 
+Name:dataSource, Connection:2, Time:0, Success:True
+Type:Prepared, Batch:False, QuerySize:1, BatchSize:0
+Query:["select * from `branding_app_local`.`team` where 1=0"]
+Params:[()]
+2024-11-09T13:56:52.287+05:30 DEBUG 79552 --- [main] n.t.d.l.l.SLF4JQueryLoggingListener      : 
+Name:dataSource, Connection:2, Time:1, Success:True
+Type:Prepared, Batch:False, QuerySize:1, BatchSize:0
+Query:["select * from `branding_app_local`.`team` where 1=0"]
+Params:[()]
+2024-11-09T13:56:52.295+05:30 DEBUG 79552 --- [main] n.t.d.l.l.SLF4JQueryLoggingListener      : 
+Name:dataSource, Connection:2, Time:0, Success:True
+Type:Prepared, Batch:False, QuerySize:1, BatchSize:0
+Query:["select * from `branding_app_local`.`product_config` where 1=0"]
+Params:[()]
+2024-11-09T13:56:52.296+05:30 DEBUG 79552 --- [main] n.t.d.l.l.SLF4JQueryLoggingListener      : 
+Name:dataSource, Connection:2, Time:0, Success:True
+Type:Prepared, Batch:False, QuerySize:1, BatchSize:0
+Query:["select * from `branding_app_local`.`team` where 1=0"]
+Params:[()]
+2024-11-09T13:56:52.297+05:30  INFO 79552 --- [main] j.LocalContainerEntityManagerFactoryBean : Initialized JPA EntityManagerFactory for persistence unit 'default'
+2024-11-09T13:56:52.603+05:30  WARN 79552 --- [main] JpaBaseConfiguration$JpaWebConfiguration : spring.jpa.open-in-view is enabled by default. Therefore, database queries may be performed during view rendering. Explicitly configure spring.jpa.open-in-view to disable this warning
+2024-11-09T13:56:52.610+05:30  WARN 79552 --- [main] r$InitializeUserDetailsManagerConfigurer : Found 2 UserDetailsService beans, with names [userService, userDetailsService]. Global Authentication Manager will not use a UserDetailsService for username/password login. Consider publishing a single UserDetailsService bean.
+2024-11-09T13:56:52.694+05:30  INFO 79552 --- [main] o.s.s.web.DefaultSecurityFilterChain     : Will secure any request with [org.springframework.security.web.session.DisableEncodeUrlFilter@3533b614, org.springframework.security.web.context.request.async.WebAsyncManagerIntegrationFilter@1caa1866, org.springframework.security.web.context.SecurityContextHolderFilter@58dd584a, org.springframework.security.web.header.HeaderWriterFilter@524945e2, org.springframework.security.web.authentication.logout.LogoutFilter@43851574, com.lb.brandingApp.auth.filter.AuthTokenFilter@2e871e93, org.springframework.security.web.savedrequest.RequestCacheAwareFilter@21f9764, org.springframework.security.web.servletapi.SecurityContextHolderAwareRequestFilter@54c2cfc9, org.springframework.security.web.authentication.AnonymousAuthenticationFilter@4fec93d0, org.springframework.security.web.access.ExceptionTranslationFilter@d1b9dd7, org.springframework.security.web.access.intercept.AuthorizationFilter@3ef2f84c]
+2024-11-09T13:56:52.782+05:30  INFO 79552 --- [main] o.s.b.w.embedded.tomcat.TomcatWebServer  : Tomcat started on port 8082 (http) with context path '/'
+2024-11-09T13:56:52.787+05:30  INFO 79552 --- [main] com.lb.brandingApp.BrandingApplication   : Started BrandingApplication in 2.556 seconds (process running for 2.762)
+2024-11-09T13:57:14.690+05:30  INFO 79552 --- [SpringApplicationShutdownHook] j.LocalContainerEntityManagerFactoryBean : Closing JPA EntityManagerFactory for persistence unit 'default'
+2024-11-09T13:57:14.695+05:30  INFO 79552 --- [SpringApplicationShutdownHook] com.zaxxer.hikari.HikariDataSource       : HikariPool-1 - Shutdown initiated...
+2024-11-09T13:57:14.698+05:30  INFO 79552 --- [SpringApplicationShutdownHook] com.zaxxer.hikari.HikariDataSource       : HikariPool-1 - Shutdown completed.
