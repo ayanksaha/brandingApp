@@ -48,7 +48,7 @@ public class TaskMapper {
                     .collect(Collectors.toSet());
         }
 
-        return TaskResponseDto.builder()
+        TaskResponseDto response = TaskResponseDto.builder()
                 .id(task.getId())
                 .name(task.getName())
                 .location(task.getLocation())
@@ -119,6 +119,7 @@ public class TaskMapper {
                                 .team(lastModifiedBy.getTeam().getDescription().description())
                                 .build())
                 .build();
+        return response;
     }
 
     private List<AllotmentResponseDto> mapAllotments(Task task, Set<Allotment> allotments) {

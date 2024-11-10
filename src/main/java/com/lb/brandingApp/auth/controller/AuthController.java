@@ -9,6 +9,7 @@ import com.lb.brandingApp.auth.data.models.response.UserResponseDto;
 import com.lb.brandingApp.auth.service.AuthService;
 import com.lb.brandingApp.auth.service.TeamService;
 import lombok.NonNull;
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
@@ -16,6 +17,7 @@ import org.springframework.web.bind.annotation.*;
 import java.util.List;
 
 @RestController
+@Slf4j
 public class AuthController {
 
     @Autowired
@@ -26,6 +28,7 @@ public class AuthController {
 
     @PostMapping("/app/login")
     public ResponseEntity<UserResponseDto> authenticate(@RequestBody UserRequestDto request) {
+        log.info("Login requested for {}", request.username());
         return ResponseEntity.ok(authService.authenticate(request));
     }
 

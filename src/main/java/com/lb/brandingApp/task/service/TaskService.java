@@ -873,7 +873,7 @@ public class TaskService {
                         ChronoUnit.valueOf(category.getVerificationInterval().getUnit().name())) : null;
 
         if (nextAssignee == null && assignee.getAssignedToTeam().getDescription() == TeamDescription.VERIFICATION
-                && Objects.nonNull(nextPickUpDate) && allotment.getExpiry().isAfter(nextPickUpDate)) {
+                && Objects.nonNull(nextPickUpDate) && Objects.nonNull(allotment.getExpiry()) && allotment.getExpiry().isAfter(nextPickUpDate)) {
             nextAssignee = new Assignee();
             nextAssignee.setAssignedToTeam(assignee.getAssignedToTeam());
             nextAssignee.setPickUpDate(nextPickUpDate);

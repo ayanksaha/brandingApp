@@ -23,7 +23,6 @@ import java.io.IOException;
 import java.time.Duration;
 import java.time.LocalDate;
 import java.time.format.DateTimeFormatter;
-import java.time.temporal.ChronoUnit;
 import java.util.List;
 import java.util.Objects;
 
@@ -123,14 +122,16 @@ public class PdfService {
                             .setFontColor(ColorConstants.BLACK)
                             .setTextAlignment(TextAlignment.CENTER));
                     case "Item Details", "Items" -> {
-                        Paragraph paragraph = new Paragraph();
+                        Table table1 = new Table(1).useAllAvailableWidth();
+                        table1.setMarginTop(5);
+                        table1.setMarginBottom(5);
                         reportItem.getAllotments().forEach(allotmentResponseDto ->
-                                paragraph.add(allotmentResponseDto.getProduct().getName() + " - "
+                                table1.addCell(new Paragraph(allotmentResponseDto.getProduct().getName() + " - "
                                         + allotmentResponseDto.getDimension().getLength() + " * "
                                         + allotmentResponseDto.getDimension().getWidth() + " - "
-                                        + allotmentResponseDto.getQuantity().getValue()));
+                                        + allotmentResponseDto.getQuantity().getValue())));
                         table.addCell(new Cell(1, 1)
-                                        .add(paragraph))
+                                        .add(table1))
                                 .setFont(rowFont)
                                 .setFontSize(12)
                                 .setFontColor(ColorConstants.BLACK)

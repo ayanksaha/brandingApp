@@ -4,7 +4,6 @@ import com.lb.brandingApp.auth.data.entities.Team;
 import com.lb.brandingApp.auth.data.entities.User;
 import com.lb.brandingApp.auth.data.models.common.UserExtension;
 import com.lb.brandingApp.auth.repository.UserRepository;
-import com.lb.brandingApp.app.utils.AppUtil;
 import com.lb.brandingApp.common.mapper.CommonMapper;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.security.core.authority.SimpleGrantedAuthority;
